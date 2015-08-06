@@ -17,7 +17,9 @@ public class HandleDbTemplateSuper {
 	private static final String MySQLJDBCDriver = "org.gjt.mm.mysql.Driver";
 	public static final String POSTGRESJDBCDRIVER_STRING = "org.postgresql.Driver";
 	public static final int TOKYO97_EPGS_CODE = 4301;
+	/** WGS84 経度緯度(世界測地系とほぼ同じ) */
 	public static final int WGS84_EPSG_CODE = 4326;
+	/** 世界測地系UTMゾーン53 */
 	public static final int WGS84_UTM_EPGS_CODE=3099;
 	// 下記の変数を正しく設定する
 	// DBNAME, DBDIR, USER, PASS, JDBCDriver, DBURL

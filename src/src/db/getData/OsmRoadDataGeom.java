@@ -5,6 +5,7 @@ import java.awt.geom.Point2D;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 
+import org.apache.naming.java.javaURLContextFactory;
 import org.postgis.PGgeometry;
 
 import src.db.GeometryParsePostgres;
@@ -38,6 +39,22 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 	public ArrayList<Integer> _clazz;
 	/** 道路の形状を表す */
 	public ArrayList<ArrayList<Line2D>> _arc;
+	
+	//////////////////////////
+	/** リンクID */
+	public ArrayList<Integer> __linkId;
+	/** (sourcePoint, targetPoint)の組 */
+	public ArrayList<Line2D> __link;
+	public ArrayList<Integer> __sourceId;
+	public ArrayList<Integer> __targetId;
+	/** km */
+	public ArrayList<Double> __length;
+	/** cost */
+	public ArrayList<Double> __length2;
+	/** 道路のクラス */
+	public ArrayList<Integer> __clazz;
+	/** 道路の形状を表す */
+	public ArrayList<ArrayList<Line2D>> __arc;
 	
 	public OsmRoadDataGeom(){
 		super(DBNAME, USER, PASS, DBURL, HandleDbTemplateSuper.POSTGRESJDBCDRIVER_STRING);
@@ -94,6 +111,128 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+	}
+	
+	/**
+	 * 指定したpolygon(wkt形式のString型)内の道路データを取得する
+	 */
+	public void getOsmRoadFromPolygon(Point2D aCenterLngLat, double aRadius){
+		__linkId = new ArrayList<>();
+		__link = new ArrayList<>();
+		__sourceId = new ArrayList<>();
+		__targetId = new ArrayList<>();
+		__length = new ArrayList<>();
+		__length2 = new ArrayList<>();
+		__clazz = new ArrayList<>();
+		__arc = new ArrayList<>();
+		
+		try{
+			String statement;
+			// SRID=4326.
+			statement = "select " +
+					" id, osm_name,osm_source_id, osm_target_id, clazz, source, target, km, cost, x1, y1, x2, y2, geom_way" +
+					" from osm_japan_car_2po_4pgr " +
+					" where" +
+					" st_intersects(" +
+						"st_transform(" +
+							"ST_Buffer(" +
+								"st_transform(" +
+									"ST_SetSRID(ST_MakePoint("+aCenterLngLat.getX()+", "+aCenterLngLat.getY()+"),"+WGS84_EPSG_CODE+"), "+
+									WGS84_UTM_EPGS_CODE+"" +
+								"), "+aRadius+"" +
+							"), "+WGS84_EPSG_CODE+"" +
+						"), "+
+						"geom_way) " +
+					" and " +
+					" clazz > 12" +
+					"";
+			System.out.println(statement);
+			ResultSet rs = execute(statement);
+			while(rs.next()){
+				__linkId.add(rs.getInt("id"));
+				__sourceId.add(rs.getInt("source"));
+				__targetId.add(rs.getInt("target"));
+				__link.add((Line2D)new Line2D.Double(rs.getDouble("x1"), rs.getDouble("y1"), rs.getDouble("x2"), rs.getDouble("y2")));
+				__length.add(rs.getDouble("km"));
+				__length2.add(rs.getDouble("cost"));
+				__clazz.add(rs.getInt("clazz"));
+//				System.out.println(GeometryParsePostgres.getLineStringMultiPoint((PGgeometry)rs.getObject("geom")));
+				__arc.add(GeometryParsePostgres.getLineStringMultiLine((PGgeometry)rs.getObject("geom_way")));
+			}
+			rs.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+	}
+	
+	
+	/**
+	 * 1ピクセルあたりのx方向y方向の長さ(メートル)を取得する
+	 * @param aCenterLngLat
+	 * @param aLnglatPerPixel
+	 * @return
+	 */
+	public Point2D calcMeterPerPixel(Point2D aCenterLngLat, Point2D aLnglatPerPixel){
+		try{
+			String stmt = "select " +
+					"st_length(" +
+						"st_transform(" +
+							"st_setSRID(" +
+								"st_makeLine(" +
+									"st_makePoint("+aCenterLngLat.getX()+","+aCenterLngLat.getY()+")," +
+									"st_makePoint("+(aCenterLngLat.getX()+aLnglatPerPixel.getX())+","+aCenterLngLat.getY()+")" +
+								"), " +
+								""+WGS84_EPSG_CODE+"" +
+							"), "+WGS84_UTM_EPGS_CODE+"" +
+						")" +
+					") as lengthX," +
+					"st_length(" +
+						"st_transform(" +
+							"st_setSRID(" +
+								"st_makeLine(" +
+									"st_makePoint("+aCenterLngLat.getX()+","+aCenterLngLat.getY()+")," +
+									"st_makePoint("+aCenterLngLat.getX()+","+(aCenterLngLat.getY()+aLnglatPerPixel.getY())+")" +
+								"), " +
+								""+WGS84_EPSG_CODE+"" +
+							"), "+WGS84_UTM_EPGS_CODE+"" +
+						")" +
+					") as lengthY";
+			System.out.println(stmt);
+			ResultSet rs = execute(stmt);
+			if(rs.next()){
+				return new Point2D.Double(rs.getDouble("lengthX"), rs.getDouble("lengthY"));
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	/**
+	 * 2点の緯度経度から長さ(メートル)を求める
+	 * 
+	 */
+	public double calcMeterLength(Point2D p1, Point2D p2){
+		try{
+			String stmt = "select st_length(" +
+						"st_transform(" +
+							"st_setSRID(" +
+								"st_makeLine(" +
+									"st_makePoint("+p1.getX()+","+p1.getY()+")," +
+									"st_makePoint("+p2.getX()+","+p2.getY()+")" +
+								"), " +
+								""+WGS84_EPSG_CODE+"" +
+							"), "+WGS84_UTM_EPGS_CODE+"" +
+						")" +
+					") as length";
+			ResultSet rSet = execute(stmt);
+			if(rSet.next()){
+				return rSet.getDouble("length");
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return 0;
 	}
 	
 }

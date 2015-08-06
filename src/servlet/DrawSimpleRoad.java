@@ -22,7 +22,7 @@ import src.db.getData.OsmDataGeom;
 import src.db.getData.OsmRoadDataGeom;
 
 /**
- * 
+ * 単純に道路の描画
  * @author murase
  *
  */
@@ -34,7 +34,7 @@ public class DrawSimpleRoad {
 	/** 初期の経度. */
 	private static final double DEFAULT_LNG = 136.9309671669116;	// 鶴舞公園.
 	/** 初期の緯度. */
-	private static final double DEFAULT_LAT = 35.15778942665804;	// 鶴舞公園.
+	private static final double DEFAULT_LAT = 35.15478942665804;	// 鶴舞公園.
 	/** 初期のスケール. */
 	private static final int DEFAULT_SCALE = 15;
 	

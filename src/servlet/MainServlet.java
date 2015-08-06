@@ -41,7 +41,11 @@ public class MainServlet extends HttpServlet{
 		
 		type = request.getParameter("type");
 		switch(type){
-		case "drawSimpleRoad" :
+		case "DrawElasticRoad":
+			new DrawElasticRoad(request, response);
+			break;
+		case "DrawSimpleRoad" :
+			System.out.println("drawSimpleRoad");
 			new DrawSimpleRoad(request, response);
 			break;
 		case "Test":
