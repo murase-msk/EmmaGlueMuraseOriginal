@@ -165,6 +165,11 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 			}
 	}
 	
+	//////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////
+	/////////////////このクラスに入れるべきでないメソッド/////////////////
+	//////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////
 	
 	/**
 	 * 1ピクセルあたりのx方向y方向の長さ(メートル)を取得する
@@ -174,7 +179,29 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 	 */
 	public Point2D calcMeterPerPixel(Point2D aCenterLngLat, Point2D aLnglatPerPixel){
 		try{
-			String stmt = "select " +
+			String stmt;
+			//8202ms
+//			stmt = "select " +
+//					"st_length(" +
+//						"st_transform(" +
+//							"st_geomFromText(" +
+//								"'lineString("+aCenterLngLat.getX()+" "+aCenterLngLat.getY()+"," +
+//									""+(aCenterLngLat.getX()+aLnglatPerPixel.getX())+" "+aCenterLngLat.getY()+"" +
+//								")',"+WGS84_EPSG_CODE+"" +
+//							"), "+WGS84_UTM_EPGS_CODE+"" +
+//						")" +
+//					") as lengthX," +
+//					"st_length(" +
+//						"st_transform(" +
+//							"st_geomFromText(" +
+//								"'lineString("+aCenterLngLat.getX()+" "+aCenterLngLat.getY()+"," +
+//									""+(aCenterLngLat.getX())+" "+(aCenterLngLat.getY()+aLnglatPerPixel.getY())+"" +
+//								")',"+WGS84_EPSG_CODE+"" +
+//							"), "+WGS84_UTM_EPGS_CODE+"" +
+//						")" +
+//					") as lengthY";
+			//8300ms
+			stmt = "select " +
 					"st_length(" +
 						"st_transform(" +
 							"st_setSRID(" +
@@ -197,6 +224,7 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 							"), "+WGS84_UTM_EPGS_CODE+"" +
 						")" +
 					") as lengthY";
+			
 			System.out.println(stmt);
 			ResultSet rs = execute(stmt);
 			if(rs.next()){

@@ -7,6 +7,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.sun.corba.se.impl.protocol.giopmsgheaders.RequestMessage;
+
 
 
 /**
@@ -41,6 +43,9 @@ public class MainServlet extends HttpServlet{
 		
 		type = request.getParameter("type");
 		switch(type){
+		case "DrawElasticStroke":
+			new DrawElasticStroke(request, response);
+			break;
 		case "DrawElasticRoad":
 			new DrawElasticRoad(request, response);
 			break;

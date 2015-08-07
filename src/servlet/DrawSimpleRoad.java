@@ -18,7 +18,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import src.coordinate.ConvertLngLatXyCoordinate;
 import src.coordinate.GetLngLatOsm;
-import src.db.getData.OsmDataGeom;
 import src.db.getData.OsmRoadDataGeom;
 
 /**

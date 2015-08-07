@@ -5,10 +5,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import java.awt.geom.Point2D.Double;
 import java.awt.image.BufferedImage;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -17,19 +15,12 @@ import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
-
 import src.coordinate.ConvertLngLatXyCoordinate;
 import src.coordinate.GetLngLatOsm;
 import src.db.getData.OsmRoadDataGeom;
+import src.db.getData.OsmStrokeDataGeom;
 
-/**
- * 伸縮する道路を描画
- * http://localhost:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticRoad
- * @author murase
- *
- */
-public class DrawElasticRoad {
+public class DrawElasticStroke {
 	
 	/** 地図パネルの横幅. */
 	public static  int WINDOW_WIDTH = 700;
@@ -41,8 +32,6 @@ public class DrawElasticRoad {
 	private static final double DEFAULT_LAT = 35.15478942665804;	// 鶴舞公園.
 	/** 初期の緯度経度Point2D形式 */
 	private static final Point2D.Double DEFAULT_LNGLAT = new Point2D.Double(DEFAULT_LNG, DEFAULT_LAT);
-	/** 初期のスケール. */
-//	private static final int DEFAULT_SCALE = 15;
 	
 	
 	/** focusのスケール */
@@ -61,8 +50,6 @@ public class DrawElasticRoad {
 	
 	
 	Graphics2D _graphics2d;
-//	public GetLngLatOsm _getLngLatOsm;
-//	public ConvertLngLatXyCoordinate _convert;
 	/** focus */
 	public GetLngLatOsm _getLngLatOsmFocus;
 	/** focus領域の緯度経度xy変換 */
@@ -73,11 +60,10 @@ public class DrawElasticRoad {
 	public ConvertLngLatXyCoordinate _convertContext;
 	/** glue領域の緯度経度xy変換 */
 	public ArrayList<ConvertLngLatXyCoordinate> _arrayConvert;
-//	public Point2D _upperLeftLngLat;
-//	public Point2D _lowerRightLngLat;
+
 	
-	
-	public DrawElasticRoad(HttpServletRequest request, HttpServletResponse response) {
+	public DrawElasticStroke(HttpServletRequest request, HttpServletResponse response) {
+		
 		try{
 			OutputStream out=response.getOutputStream();
 			//BufferedImage img = emgd.getEmGlueImage(param);
@@ -87,8 +73,8 @@ public class DrawElasticRoad {
 			e.printStackTrace();
 		}
 
+		
 	}
-	
 	
 	/**
 	 * 道路データの取得しbufferedimageの作成
@@ -100,14 +86,6 @@ public class DrawElasticRoad {
 		_graphics2d = (Graphics2D) bfImage.getGraphics();
 		// アンチエイリアス設定：遅いときは次の行をコメントアウトする.
 		_graphics2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		
-		// 中心座標とスケールから 左上と右下の座標取得.
-//		_getLngLatOsm = new GetLngLatOsm(new Point2D.Double(DEFAULT_LNG, DEFAULT_LAT), DEFAULT_SCALE, new Point(WINDOW_WIDTH, WINDOW_HEIGHT));
-//		_upperLeftLngLat = _getLngLatOsm._upperLeftLngLat;
-//		_lowerRightLngLat = _getLngLatOsm._lowerRightLngLat;
-		// 緯度経度とXy座標の変換用インスタンス.
-//		_convert = new ConvertLngLatXyCoordinate((Point2D.Double)_upperLeftLngLat,
-//				(Point2D.Double)_lowerRightLngLat, new Point(WINDOW_WIDTH, WINDOW_HEIGHT));
 		
 		//focus用の緯度経度xy変換
 		_getLngLatOsmFocus = new GetLngLatOsm(new Point2D.Double(DEFAULT_LNG, DEFAULT_LAT), FOCUS_SCALE, new Point(WINDOW_WIDTH, WINDOW_HEIGHT));
@@ -122,20 +100,26 @@ public class DrawElasticRoad {
 		// 100種類のの変換オブジェクト.
 		_arrayConvert = calcArrayConvert();
 		
+		
+		// ストローク取得.
+		OsmStrokeDataGeom osmStrokeDataGeom = new OsmStrokeDataGeom();
+		osmStrokeDataGeom.startConnection();
+		Point upperLeftOuterGlueXY = new Point(WINDOW_WIDTH/2-GLUE_OUTER_RADIUS, WINDOW_WIDTH/2-GLUE_OUTER_RADIUS);
+		Point LowerRightOuterGlueXY = new Point(WINDOW_WIDTH/2-GLUE_OUTER_RADIUS + GLUE_OUTER_RADIUS*2, WINDOW_WIDTH/2-GLUE_OUTER_RADIUS + GLUE_OUTER_RADIUS*2);
+		osmStrokeDataGeom.cutOutStroke(_convertContext.convertXyCoordinateToLngLat(upperLeftOuterGlueXY), _convertContext.convertXyCoordinateToLngLat(LowerRightOuterGlueXY));
+		osmStrokeDataGeom.endConnection();
+		// glue部分だけ先に描画
+		paintGlueStroke(osmStrokeDataGeom._subStrokeArc);
+		
 		// 道路データの取得.
 		OsmRoadDataGeom osmRoadDataGeom = new OsmRoadDataGeom();
 		osmRoadDataGeom.startConnection();
 		// 矩形範囲内の道路データを取得する.
 		osmRoadDataGeom.insertOsmRoadData(_getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat);
 		osmRoadDataGeom.__arc = osmRoadDataGeom._arc;
-		// 半径150pixel分の道路データを取得する.
-//		osmRoadDataGeom.getOsmRoadFromPolygon(new Point2D.Double(DEFAULT_LNG, DEFAULT_LAT), (_convert.meterPerPixel.getX() * glue_outer_radius));
-		
-		
 		osmRoadDataGeom.endConnection();
-		
-		// 道路の描画.
-		paintElasticRoadData(osmRoadDataGeom.__arc);
+		// // focus, contextの道路の描画.
+		paintRoadData(osmRoadDataGeom.__arc);
 		
 		_graphics2d.setColor(Color.red);
 		// 中心点.
@@ -147,7 +131,7 @@ public class DrawElasticRoad {
 		
 		return bfImage;
 	}
-	
+
 	/**
 	 * glueの内側から外側までの座標変換のオブジェクト生成(100個生成する)
 	 * focusからcontextまで行くと縦横(1/2)になるとする
@@ -177,17 +161,69 @@ public class DrawElasticRoad {
 		return arrayConvert;
 	}
 	
-	
 	/////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////
 	///////////////////道路描画について//////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////
+	/***
+	 * glue部分のストロークの描画
+	 */
+	public void paintGlueStroke(ArrayList<ArrayList<Line2D>> __arc){
+		OsmRoadDataGeom osmRoadDataGeom = new OsmRoadDataGeom();
+		osmRoadDataGeom.startConnection();
+		Point p1Xy;
+		Point p2Xy;
+		//for(ArrayList<Line2D> arrArc : __arc){
+		for(int i=0; i<30; i++){	// 上位30本だけ.
+			for(Line2D arc : __arc.get(i)){
+				// 2点の緯度経度から中心までの距離(メートル)を求める.
+				double p1Meter = osmRoadDataGeom.calcMeterLength(DEFAULT_LNGLAT, arc.getP1());
+				double p2Meter = osmRoadDataGeom.calcMeterLength(DEFAULT_LNGLAT, arc.getP2());
+				boolean p1GlueFlg = false;// p1がglue領域にあるか.
+				// p1について.
+				if(p1Meter < glueInnerRadiusMeter){	// focus領域にある.
+					p1Xy = _convertFocus.convertLngLatToXyCoordinate(arc.getP1());
+//					continue;
+				}else if ( glueInnerRadiusMeter < p1Meter && p1Meter < glueOuterRadiusMeter){// glue領域にある.
+					// glue内側から見て何パーセントの位置にあるか.
+					int glueRatio = (int)((p1Meter-glueInnerRadiusMeter)/(glueOuterRadiusMeter - glueInnerRadiusMeter)*100);
+					p1Xy = _arrayConvert.get(glueRatio).convertLngLatToXyCoordinate(arc.getP1());
+					p1GlueFlg = true;
+//					continue;
+				}else{// context領域にある.
+					p1Xy = _convertContext.convertLngLatToXyCoordinate(arc.getP1());
+//					continue;
+				}
+				// p2について.
+				if(p2Meter < glueInnerRadiusMeter){	// focus領域にある.
+					p2Xy = _convertFocus.convertLngLatToXyCoordinate(arc.getP2());
+					if(p1GlueFlg == false){
+						continue;
+					}
+				}else if ( glueInnerRadiusMeter < p2Meter && p2Meter < glueOuterRadiusMeter){// glue領域にある.
+					// glue内側から見て何パーセントの位置にあるか.
+					int glueRatio = (int)((p2Meter-glueInnerRadiusMeter)/(glueOuterRadiusMeter - glueInnerRadiusMeter)*100);
+					p2Xy = _arrayConvert.get(glueRatio).convertLngLatToXyCoordinate(arc.getP2());
+//					continue;
+				}else{// context領域にある.
+					p2Xy = _convertContext.convertLngLatToXyCoordinate(arc.getP2());
+					if(p1GlueFlg == false){
+						continue;
+					}
+				}
+				System.out.println("draw stroke");
+				paint2dLine(new Line2D.Double(p1Xy, p2Xy), Color.pink, (float)3);
+			}
+		}
+		osmRoadDataGeom.endConnection();
+	}
+	
 	/**
-	 * 伸縮した道路データの描画.
+	 * 道路データの描画.
 	 * @param __arc
 	 */
-	public void paintElasticRoadData(ArrayList<ArrayList<Line2D>> __arc){
+	public void paintRoadData(ArrayList<ArrayList<Line2D>> __arc){
 		OsmRoadDataGeom osmRoadDataGeom = new OsmRoadDataGeom();
 		osmRoadDataGeom.startConnection();
 		Point p1Xy;
@@ -204,9 +240,9 @@ public class DrawElasticRoad {
 //					continue;
 				}else if ( glueInnerRadiusMeter < p1Meter && p1Meter < glueOuterRadiusMeter){// glue領域にある.
 					// glue内側から見て何パーセントの位置にあるか.
-					int glueRatio = (int)((p1Meter-glueInnerRadiusMeter)/(glueOuterRadiusMeter - glueInnerRadiusMeter)*100);
-					p1Xy = _arrayConvert.get(glueRatio).convertLngLatToXyCoordinate(arc.getP1());
-//					continue;
+//					int glueRatio = (int)((p1Meter-glueInnerRadiusMeter)/(glueOuterRadiusMeter - glueInnerRadiusMeter)*100);
+//					p1Xy = _arrayConvert.get(glueRatio).convertLngLatToXyCoordinate(arc.getP1());
+					continue;
 				}else{// context領域にある.
 					p1Xy = _convertContext.convertLngLatToXyCoordinate(arc.getP1());
 //					continue;
@@ -217,9 +253,9 @@ public class DrawElasticRoad {
 //					continue;
 				}else if ( glueInnerRadiusMeter < p2Meter && p2Meter < glueOuterRadiusMeter){// glue領域にある.
 					// glue内側から見て何パーセントの位置にあるか.
-					int glueRatio = (int)((p2Meter-glueInnerRadiusMeter)/(glueOuterRadiusMeter - glueInnerRadiusMeter)*100);
-					p2Xy = _arrayConvert.get(glueRatio).convertLngLatToXyCoordinate(arc.getP2());
-//					continue;
+//					int glueRatio = (int)((p2Meter-glueInnerRadiusMeter)/(glueOuterRadiusMeter - glueInnerRadiusMeter)*100);
+//					p2Xy = _arrayConvert.get(glueRatio).convertLngLatToXyCoordinate(arc.getP2());
+					continue;
 				}else{// context領域にある.
 					p2Xy = _convertContext.convertLngLatToXyCoordinate(arc.getP2());
 //					continue;
@@ -241,5 +277,5 @@ public class DrawElasticRoad {
 		_graphics2d.draw(linkLine);
 	}
 
-
+	
 }
