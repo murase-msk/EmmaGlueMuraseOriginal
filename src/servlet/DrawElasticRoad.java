@@ -111,8 +111,10 @@ public class DrawElasticRoad {
 		_getLngLatOsmContext = new GetLngLatOsm(DEFAULT_LNGLAT, CONTEXT_SCALE, DEFAULT_WINDOW_SIZE);
 		_convertContext = new ConvertLngLatXyCoordinate((Point2D.Double)_getLngLatOsmContext._upperLeftLngLat,
 				(Point2D.Double)_getLngLatOsmContext._lowerRightLngLat, DEFAULT_WINDOW_SIZE);
-		glueInnerRadiusMeter = GLUE_INNER_RADIUS*_convertFocus.meterPerPixel.getX();
+		glueInnerRadiusMeter = GLUE_INNER_RADIUS*_convertContext.meterPerPixel.getX();
 		glueOuterRadiusMeter = GLUE_OUTER_RADIUS*_convertContext.meterPerPixel.getX();
+//		System.out.println(glueInnerRadiusMeter);
+//		System.out.println(glueOuterRadiusMeter);
 		// contextでのメルカトル座標系xy変換.
 		_contextMercatorConvert = new ConvertMercatorXyCoordinate(
 				LngLatMercatorUtility.ConvertLngLatToMercator((Point2D.Double)_getLngLatOsmContext._upperLeftLngLat), 
@@ -173,33 +175,35 @@ public class DrawElasticRoad {
 				// 2点の緯度経度から中心までの距離(メートル)を求める.
 				double p1Meter = LngLatMercatorUtility.calcDistanceFromLngLat(DEFAULT_LNGLAT, arc.getP1());
 				double p2Meter = LngLatMercatorUtility.calcDistanceFromLngLat(DEFAULT_LNGLAT, arc.getP2());
+//				System.out.println(p1Meter);
+//				System.out.println(p2Meter);
 				// p1について.
 				if(p1Meter < glueInnerRadiusMeter){	// focus領域にある.
 					p1Xy = _convertFocus.convertLngLatToXyCoordinate(arc.getP1());
-					continue;
+//					continue;
 				}else if ( glueInnerRadiusMeter < p1Meter && p1Meter < glueOuterRadiusMeter){// glue領域にある.
 					// glue内側から見て何パーセントの位置にあるか(0~1).
 					double glueRatio = (p1Meter-glueInnerRadiusMeter)/(glueOuterRadiusMeter - glueInnerRadiusMeter);
 					Point2D elasticPointMercator = elasticPoint.calcElasticPoint(LngLatMercatorUtility.ConvertLngLatToMercator(arc.getP1()), glueRatio);
 					p1Xy = _contextMercatorConvert.convertMercatorToXyCoordinate(elasticPointMercator);
-//					continue;
+					continue;
 				}else{// context領域にある.
 					p1Xy = _convertContext.convertLngLatToXyCoordinate(arc.getP1());
-					continue;
+//					continue;
 				}
 				// p2について.
 				if(p2Meter < glueInnerRadiusMeter){	// focus領域にある.
 					p2Xy = _convertFocus.convertLngLatToXyCoordinate(arc.getP2());
-					continue;
+//					continue;
 				}else if ( glueInnerRadiusMeter < p2Meter && p2Meter < glueOuterRadiusMeter){// glue領域にある.
 					// glue内側から見て何パーセントの位置にあるか(0~1).
 					double glueRatio = (p2Meter-glueInnerRadiusMeter)/(glueOuterRadiusMeter - glueInnerRadiusMeter);
 					Point2D elasticPointMercator = elasticPoint.calcElasticPoint(LngLatMercatorUtility.ConvertLngLatToMercator(arc.getP2()), glueRatio);
 					p2Xy = _contextMercatorConvert.convertMercatorToXyCoordinate(elasticPointMercator);
-//					continue;
+					continue;
 				}else{// context領域にある.
 					p2Xy = _convertContext.convertLngLatToXyCoordinate(arc.getP2());
-					continue;
+//					continue;
 				}
 				paint2dLine(new Line2D.Double(p1Xy, p2Xy), Color.pink, (float)3);
 			}

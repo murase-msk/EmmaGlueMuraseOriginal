@@ -50,8 +50,8 @@ public class ConvertLngLatXyCoordinate {
 		pixelPerLngLat = new Point2D.Double((_windowSize.getY()/Math.abs(_upperLeftLngLat.getX()-_lowerRightLngLat.getX()))
 				,(_windowSize.getY())/Math.abs(_upperLeftLngLat.getY()-_lowerRightLngLat.getY()));
 		meterPerPixel = new Point2D.Double(
-				LngLatMercatorUtility.calcDistanceFromLngLat(_upperLeftLngLat, new Point2D.Double(_upperLeftLngLat.getX()+pixelPerLngLat.getX(), _upperLeftLngLat.getY())),
-				LngLatMercatorUtility.calcDistanceFromLngLat(_upperLeftLngLat, new Point2D.Double(_upperLeftLngLat.getX(), _upperLeftLngLat.getY()+pixelPerLngLat.getY()))
+				LngLatMercatorUtility.calcDistanceFromLngLat(_upperLeftLngLat, new Point2D.Double(_upperLeftLngLat.getX()+lnglatPerPixel.getX(), _upperLeftLngLat.getY())),
+				LngLatMercatorUtility.calcDistanceFromLngLat(_upperLeftLngLat, new Point2D.Double(_upperLeftLngLat.getX(), _upperLeftLngLat.getY()+lnglatPerPixel.getY()))
 				);
 	}
 	
