@@ -19,6 +19,9 @@ glueサーバを作るかも
 
 # バージョン履歴
 
+## v2_0_2
+細かい修正
+
 ## v2_0_0
 
 * 緯度経度，投影法の変換をPostGISでなくjavaで処理することで高速化した(LngLatMercatorUtility).
