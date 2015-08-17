@@ -1,5 +1,6 @@
 # description
 
+
 glueサーバを作るかも
 
 
@@ -16,12 +17,33 @@ glueサーバを作るかも
 	- サーブレットで描画した図形を画像データとしてクライアントに返す
 
 
-
-
 # バージョン履歴
-v1_0_0
-DrawElasticStroke
+
+## v2_0_0
+
+* 緯度経度，投影法の変換をPostGISでなくjavaで処理することで高速化した(LngLatMercatorUtility).
+
 DrawElasticRoad
+
+* オリジナルのglueサーバと同じように道路変形をする
+
+## v1_0_0
+
+DrawElasticRoad
+
+* contextからfocusにつながるようにスケールを多段にする(すべての道路)
+
+DrawElasticStroke
+
+* contextからfocusにつながるようにスケールを多段にする(ストロークを使う)
+
 DrawSimpleRoad
+
+* 単純な道路の描画
+
 Test
+
+* 描画のテスト
+
 同心円，放射方向に対してスケール変化する
+
