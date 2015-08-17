@@ -5,8 +5,10 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Point2D.Double;
 import java.awt.image.BufferedImage;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -14,6 +16,8 @@ import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.sun.org.apache.bcel.internal.generic.NEW;
 
 import src.ElasticPoint;
 import src.coordinate.ConvertLngLatXyCoordinate;
@@ -36,15 +40,13 @@ public class DrawElasticRoad {
 	private static final Point2D.Double DEFAULT_LNGLAT = new Point2D.Double(136.9309671669116, 35.15478942665804);// 鶴舞公園.
 	
 	/** focusのスケール */
-	private static final int FOCUS_SCALE = 16;
+	private static final int FOCUS_SCALE = 17;
 	/** contextのスケール */
 	private static final int CONTEXT_SCALE = 15;
 	/** glue内側の半径(pixel) */
 	private static final int GLUE_INNER_RADIUS=200;
 	/** glue外側の半径(pixel) */
 	private static final int GLUE_OUTER_RADIUS=300;
-	/** glue部分の同心円方向の縮尺の種類 */
-	private static final int GLUE_SCALE_NUM = GLUE_OUTER_RADIUS - GLUE_INNER_RADIUS;
 	
 	// 中心点からglue内側の長さ.
 	public double glueInnerRadiusMeter;
@@ -66,10 +68,6 @@ public class DrawElasticRoad {
 //	public Point2D _upperLeftLngLat;
 //	public Point2D _lowerRightLngLat;
 	
-	
-	// 一時的な変数.
-	public double __radiationDirectionScale;
-	public ArrayList<Double>__concentricCircleScaleArray;
 	
 	public DrawElasticRoad(HttpServletRequest request, HttpServletResponse response) {
 		try{
@@ -111,10 +109,8 @@ public class DrawElasticRoad {
 		_getLngLatOsmContext = new GetLngLatOsm(DEFAULT_LNGLAT, CONTEXT_SCALE, DEFAULT_WINDOW_SIZE);
 		_convertContext = new ConvertLngLatXyCoordinate((Point2D.Double)_getLngLatOsmContext._upperLeftLngLat,
 				(Point2D.Double)_getLngLatOsmContext._lowerRightLngLat, DEFAULT_WINDOW_SIZE);
-		glueInnerRadiusMeter = GLUE_INNER_RADIUS*_convertContext.meterPerPixel.getX();
+		glueInnerRadiusMeter = GLUE_INNER_RADIUS*_convertFocus.meterPerPixel.getX();
 		glueOuterRadiusMeter = GLUE_OUTER_RADIUS*_convertContext.meterPerPixel.getX();
-//		System.out.println(glueInnerRadiusMeter);
-//		System.out.println(glueOuterRadiusMeter);
 		// contextでのメルカトル座標系xy変換.
 		_contextMercatorConvert = new ConvertMercatorXyCoordinate(
 				LngLatMercatorUtility.ConvertLngLatToMercator((Point2D.Double)_getLngLatOsmContext._upperLeftLngLat), 
@@ -147,7 +143,6 @@ public class DrawElasticRoad {
 		return bfImage;
 	}
 	
-
 	
 	/////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////
@@ -175,8 +170,6 @@ public class DrawElasticRoad {
 				// 2点の緯度経度から中心までの距離(メートル)を求める.
 				double p1Meter = LngLatMercatorUtility.calcDistanceFromLngLat(DEFAULT_LNGLAT, arc.getP1());
 				double p2Meter = LngLatMercatorUtility.calcDistanceFromLngLat(DEFAULT_LNGLAT, arc.getP2());
-//				System.out.println(p1Meter);
-//				System.out.println(p2Meter);
 				// p1について.
 				if(p1Meter < glueInnerRadiusMeter){	// focus領域にある.
 					p1Xy = _convertFocus.convertLngLatToXyCoordinate(arc.getP1());
@@ -186,7 +179,7 @@ public class DrawElasticRoad {
 					double glueRatio = (p1Meter-glueInnerRadiusMeter)/(glueOuterRadiusMeter - glueInnerRadiusMeter);
 					Point2D elasticPointMercator = elasticPoint.calcElasticPoint(LngLatMercatorUtility.ConvertLngLatToMercator(arc.getP1()), glueRatio);
 					p1Xy = _contextMercatorConvert.convertMercatorToXyCoordinate(elasticPointMercator);
-					continue;
+//					continue;
 				}else{// context領域にある.
 					p1Xy = _convertContext.convertLngLatToXyCoordinate(arc.getP1());
 //					continue;
@@ -200,7 +193,7 @@ public class DrawElasticRoad {
 					double glueRatio = (p2Meter-glueInnerRadiusMeter)/(glueOuterRadiusMeter - glueInnerRadiusMeter);
 					Point2D elasticPointMercator = elasticPoint.calcElasticPoint(LngLatMercatorUtility.ConvertLngLatToMercator(arc.getP2()), glueRatio);
 					p2Xy = _contextMercatorConvert.convertMercatorToXyCoordinate(elasticPointMercator);
-					continue;
+//					continue;
 				}else{// context領域にある.
 					p2Xy = _convertContext.convertLngLatToXyCoordinate(arc.getP2());
 //					continue;

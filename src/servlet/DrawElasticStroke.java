@@ -232,6 +232,7 @@ public class DrawElasticStroke {
 		for(ArrayList<Line2D> arrArc : __arc){
 			for(Line2D arc : arrArc){
 				// 2点の緯度経度から中心までの距離(メートル)を求める.
+				
 				double p1Meter = LngLatMercatorUtility.calcDistanceFromLngLat(DEFAULT_LNGLAT, arc.getP1());
 				double p2Meter = LngLatMercatorUtility.calcDistanceFromLngLat(DEFAULT_LNGLAT, arc.getP2());
 				// p1について.
