@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import src.coordinate.ConvertLngLatXyCoordinate;
 import src.coordinate.GetLngLatOsm;
+import src.coordinate.LngLatMercatorUtility;
 import src.db.getData.OsmRoadDataGeom;
 import src.db.getData.OsmStrokeDataGeom;
 
@@ -178,8 +179,8 @@ public class DrawElasticStroke {
 		for(int i=0; i<30; i++){	// 上位30本だけ.
 			for(Line2D arc : __arc.get(i)){
 				// 2点の緯度経度から中心までの距離(メートル)を求める.
-				double p1Meter = osmRoadDataGeom.calcMeterLength(DEFAULT_LNGLAT, arc.getP1());
-				double p2Meter = osmRoadDataGeom.calcMeterLength(DEFAULT_LNGLAT, arc.getP2());
+				double p1Meter = LngLatMercatorUtility.calcDistanceFromLngLat(DEFAULT_LNGLAT, arc.getP1());
+				double p2Meter = LngLatMercatorUtility.calcDistanceFromLngLat(DEFAULT_LNGLAT, arc.getP2());
 				boolean p1GlueFlg = false;// p1がglue領域にあるか.
 				// p1について.
 				if(p1Meter < glueInnerRadiusMeter){	// focus領域にある.
@@ -231,9 +232,8 @@ public class DrawElasticStroke {
 		for(ArrayList<Line2D> arrArc : __arc){
 			for(Line2D arc : arrArc){
 				// 2点の緯度経度から中心までの距離(メートル)を求める.
-				
-				double p1Meter = osmRoadDataGeom.calcMeterLength(DEFAULT_LNGLAT, arc.getP1());
-				double p2Meter = osmRoadDataGeom.calcMeterLength(DEFAULT_LNGLAT, arc.getP2());
+				double p1Meter = LngLatMercatorUtility.calcDistanceFromLngLat(DEFAULT_LNGLAT, arc.getP1());
+				double p2Meter = LngLatMercatorUtility.calcDistanceFromLngLat(DEFAULT_LNGLAT, arc.getP2());
 				// p1について.
 				if(p1Meter < glueInnerRadiusMeter){	// focus領域にある.
 					p1Xy = _convertFocus.convertLngLatToXyCoordinate(arc.getP1());
