@@ -19,15 +19,32 @@ glueサーバを作るかも
 
 # バージョン履歴
 
-v2_0_0
-DrawElasticRoad
-元のglueサーバに近い道路変形をする(ベジェ曲線使ってないかも)
+## v2_0_0
 
-v1_0_0
-DrawElasticStroke
+* 緯度経度，投影法の変換をPostGISでなくjavaで処理することで高速化した(LngLatMercatorUtility).
+
 DrawElasticRoad
+
+* オリジナルのglueサーバと同じように道路変形をする
+
+## v1_0_0
+
+DrawElasticRoad
+
+* contextからfocusにつながるようにスケールを多段にする(すべての道路)
+
+DrawElasticStroke
+
+* contextからfocusにつながるようにスケールを多段にする(ストロークを使う)
+
 DrawSimpleRoad
+
+* 単純な道路の描画
+
 Test
+
+* 描画のテスト
+
 同心円，放射方向に対してスケール変化する
 
 
