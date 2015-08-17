@@ -16,6 +16,7 @@ import src.db.getData.OsmRoadDataGeom;
  *
  */
 public class ConvertLngLatXyCoordinate {
+	// 入力1(必ず必要).
 	/** 左上の経度, 左上の緯度. */
 	private Point2D _upperLeftLngLat;
 	/** 右下の経度, 右下の緯度. */
@@ -23,6 +24,7 @@ public class ConvertLngLatXyCoordinate {
 	/** ウインドウサイズ */
 	private Point _windowSize;
 	
+	// 出力.
 	/** 経度1,緯度1あたりのピクセル数 */
 	public Point2D pixelPerLngLat;
 	/** 1ピクセルあたりの緯度経度 */
@@ -55,6 +57,29 @@ public class ConvertLngLatXyCoordinate {
 		meterPerLngLat = new Point2D.Double((meterPerPixel.getX()*pixelPerLngLat.getX()), (meterPerPixel.getY()*pixelPerLngLat.getY()));
 		osmRoadDataGeom.endConnection();
 	}
+	
+	/**
+	 * 
+	 * @param aOnePixelLngLat  1ピクセルあたりの緯度経度の変化
+	 * @param aCenterLngLat
+	 * @param aWindowSize
+	 * @param nop
+	 */
+	public ConvertLngLatXyCoordinate(Point2D aOnePixelLngLat, Point2D aCenterLngLat, Point aWindowSize, boolean nop){
+		_upperLeftLngLat = new Point2D.Double(aCenterLngLat.getX()-aOnePixelLngLat.getX()*aWindowSize.getX(), aCenterLngLat.getY()+aOnePixelLngLat.getY()*aWindowSize.getY());
+		_lowerRightLngLat = new Point2D.Double(aCenterLngLat.getX()+aOnePixelLngLat.getX()*aWindowSize.getX(), aCenterLngLat.getY()-aOnePixelLngLat.getY()*aWindowSize.getY());
+		_windowSize = aWindowSize;
+		lnglatPerPixel = aOnePixelLngLat;
+		pixelPerLngLat = new Point2D.Double((double)1/lnglatPerPixel.getX(), (double)1/lnglatPerPixel.getY());
+		OsmRoadDataGeom osmRoadDataGeom = new OsmRoadDataGeom();
+		osmRoadDataGeom.startConnection();
+		meterPerPixel = new Point2D.Double(
+				osmRoadDataGeom.calcMeterLength(aCenterLngLat,new Point2D.Double(aCenterLngLat.getX() + lnglatPerPixel.getX(), aCenterLngLat.getY())),
+				osmRoadDataGeom.calcMeterLength(aCenterLngLat, new Point2D.Double(aCenterLngLat.getX(), aCenterLngLat.getY()+lnglatPerPixel.getY())));
+		meterPerLngLat = new Point2D.Double((meterPerPixel.getX()*pixelPerLngLat.getX()), (meterPerPixel.getY()*pixelPerLngLat.getY()));
+		osmRoadDataGeom.endConnection();
+	}
+	
 	
 	/**
 	 * 緯度経度からアプレット内座標に変換.

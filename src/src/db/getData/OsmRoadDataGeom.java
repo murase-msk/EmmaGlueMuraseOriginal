@@ -253,6 +253,7 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 							"), "+WGS84_UTM_EPGS_CODE+"" +
 						")" +
 					") as length";
+//			System.out.println(stmt);
 			ResultSet rSet = execute(stmt);
 			if(rSet.next()){
 				return rSet.getDouble("length");
@@ -260,7 +261,36 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		return 0;
+		return -1;
 	}
 	
+	/**
+	 * 2点の緯度経度から方位角(ラジアン)を求める
+	 */
+	public double calcAzimath(Point2D p1, Point2D p2){
+		try{
+			// st_azimuth()は12時の方角から時計回りの向き.
+			String stmt = "" +
+					"select " +
+						"st_azimuth(" +
+							"st_setSRID(" +
+								"st_makePoint("+p1.getX()+","+p1.getY()+")," +
+								""+WGS84_EPSG_CODE+"" +
+							")," +
+							"st_setSRID(" +
+								"st_makePoint("+p2.getX()+","+p2.getY()+")," +
+								""+WGS84_EPSG_CODE+"" +
+							")" +
+						") as azimath";
+			ResultSet resultSet = execute(stmt);
+			if(resultSet.next()){
+				// ３時の方角から反時計回りに変換する.
+				double angleRadian = 2*Math.PI - (resultSet.getDouble("azimath") + Math.PI);
+				return angleRadian;
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return -1;
+	}
 }

@@ -11,8 +11,13 @@ import java.awt.geom.Point2D.Double;
  */
 public class GetLngLatOsm {
 	
+	/** 左上の緯度経度 */
 	public Point2D _upperLeftLngLat;
+	/** 右上の緯度経度 */
 	public Point2D _lowerRightLngLat;
+	/** 1pixelあたりの緯度経度の変化 */
+	public Point2D _onePixelLngLat;
+	
 	
 	/** 1枚のタイル画像の大きさ(256ピクセルx256ピクセル) */
 	private static int oneTileImageSize=256;
@@ -26,6 +31,7 @@ public class GetLngLatOsm {
 		BoundingBox bbox = tile2boundingBox((int)tileXy.getX(), (int)tileXy.getY(), aZoom);
 //		System.out.println("タイルの端点"+bbox);
 		onePixelLngLat = new Point2D.Double(((double)bbox.east-bbox.west)/oneTileImageSize, ((double)bbox.north-bbox.south)/oneTileImageSize);
+		_onePixelLngLat = onePixelLngLat;
 		
 		_upperLeftLngLat = new Point2D.Double(aCenterLngLat.getX() - (ImageSize.x/2)*onePixelLngLat.getX(), aCenterLngLat.getY()+(ImageSize.y/2)*onePixelLngLat.getY());
 		_lowerRightLngLat = new Point2D.Double(aCenterLngLat.getX() + (ImageSize.x/2)*onePixelLngLat.getX(), aCenterLngLat.getY()-(ImageSize.y/2)*onePixelLngLat.getY());

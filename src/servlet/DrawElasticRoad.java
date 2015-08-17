@@ -8,7 +8,6 @@ import java.awt.RenderingHints;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-import java.awt.geom.Point2D.Double;
 import java.awt.image.BufferedImage;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -20,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.sun.org.apache.bcel.internal.generic.NEW;
 
 import src.coordinate.ConvertLngLatXyCoordinate;
+import src.coordinate.ConvertPolarPlaneCoordinate;
 import src.coordinate.GetLngLatOsm;
 import src.db.getData.OsmRoadDataGeom;
 
@@ -53,6 +53,8 @@ public class DrawElasticRoad {
 	private static final int GLUE_INNER_RADIUS=200;
 	/** glue外側の半径 */
 	private static final int GLUE_OUTER_RADIUS=300;
+	/** glue部分の同心円方向の縮尺の種類 */
+	private static final int GLUE_SCALE_NUM = GLUE_OUTER_RADIUS - GLUE_INNER_RADIUS;
 	
 	// 中心点からglue内側の長さ.
 	public double glueInnerRadiusMeter;
@@ -76,6 +78,10 @@ public class DrawElasticRoad {
 //	public Point2D _upperLeftLngLat;
 //	public Point2D _lowerRightLngLat;
 	
+	
+	// 一時的な変数.
+	public double __radiationDirectionScale;
+	public ArrayList<Double>__concentricCircleScaleArray;
 	
 	public DrawElasticRoad(HttpServletRequest request, HttpServletResponse response) {
 		try{
@@ -119,7 +125,7 @@ public class DrawElasticRoad {
 				(Point2D.Double)_getLngLatOsmContext._lowerRightLngLat, new Point(WINDOW_WIDTH, WINDOW_HEIGHT));
 		glueInnerRadiusMeter = GLUE_INNER_RADIUS*_convertFocus.meterPerPixel.getX();
 		glueOuterRadiusMeter = GLUE_OUTER_RADIUS*_convertContext.meterPerPixel.getX();
-		// 100種類のの変換オブジェクト.
+		// GLUE_SCALE_NUM種類のの変換オブジェクト.
 		_arrayConvert = calcArrayConvert();
 		
 		// 道路データの取得.
@@ -164,15 +170,44 @@ public class DrawElasticRoad {
 				Math.abs(getLngLatOsmFocus._upperLeftLngLat.getX() - getLngLatOsmContext._upperLeftLngLat.getX()), 
 				Math.abs(getLngLatOsmFocus._upperLeftLngLat.getY() - getLngLatOsmContext._upperLeftLngLat.getY())
 				);
-		// 緯度経度とXy座標の変換用インスタンス.
+		// 緯度経度とXy座標の変換用インスタンス.(左上の緯度経度，右下の緯度経度，地図の大きさ(pixel))
 //		_convert = new ConvertLngLatXyCoordinate((Point2D.Double)getLngLatOsm._upperLeftLngLat,
-//				(Point2D.Double)getLngLatOsm._lowerRightLngLat, new Point(1000, 1000));		
-		for(int i=0; i<100; i++){
-			arrayConvert.add(new ConvertLngLatXyCoordinate(
-					new Point2D.Double(getLngLatOsmFocus._upperLeftLngLat.getX()-(diffLngLat.getX()*i/100), getLngLatOsmFocus._upperLeftLngLat.getY()+(diffLngLat.getY()*i/100)),
-					new Point2D.Double(getLngLatOsmFocus._lowerRightLngLat.getX()+(diffLngLat.getX()*i/100), getLngLatOsmFocus._lowerRightLngLat.getY()-(diffLngLat.getY()*i/100)),
-					new Point(WINDOW_WIDTH, WINDOW_HEIGHT)));
+//				(Point2D.Double)getLngLatOsm._lowerRightLngLat, new Point(1000, 1000));
+		__concentricCircleScaleArray = new ArrayList<>();
+		for(int i=0; i<GLUE_SCALE_NUM; i++){
+			// 放射方向の倍率(r).
+			double radiationDirectionScale = (double)(GLUE_OUTER_RADIUS-GLUE_INNER_RADIUS)/(GLUE_OUTER_RADIUS-GLUE_INNER_RADIUS/Math.pow(2, FOCUS_SCALE-CONTEXT_SCALE));
+			// 同心円方向の倍率(θ).
+			double concentricCircleScale = (double)(GLUE_OUTER_RADIUS-(GLUE_INNER_RADIUS+i))/(GLUE_OUTER_RADIUS-GLUE_INNER_RADIUS)*Math.pow(2, FOCUS_SCALE-CONTEXT_SCALE)+
+					(double)((GLUE_INNER_RADIUS+i)-GLUE_INNER_RADIUS)/(GLUE_OUTER_RADIUS-GLUE_INNER_RADIUS);
+			__radiationDirectionScale = radiationDirectionScale;
+			__concentricCircleScaleArray.add(concentricCircleScale);
+			// ｘ方向 x=rcosθ.
+//			double xScale = radiationDirectionScale*Math.cos(concentricCircleScale);
+			// y方向 y=rsinθ.
+//			double yScale = radiationDirectionScale*Math.sin(concentricCircleScale);
+			System.out.println(radiationDirectionScale);
+			System.out.println(concentricCircleScale);
+//			arrayConvert.add(
+//				new ConvertLngLatXyCoordinate(
+//					new Point2D.Double(
+//						// 同心円方向のスケールS_GC(x) = (b-x)/(b-a)*M*S_C+(x-a)/(b-a)*S_C.
+//							(double)(GLUE_OUTER_RADIUS-(GLUE_INNER_RADIUS+i))/(GLUE_OUTER_RADIUS-GLUE_INNER_RADIUS)*Math.pow(2, FOCUS_SCALE-CONTEXT_SCALE)*getLngLatOsmContext._onePixelLngLat.getX()+
+//						(double)((GLUE_INNER_RADIUS+i)-GLUE_INNER_RADIUS)/(GLUE_OUTER_RADIUS-GLUE_INNER_RADIUS)*getLngLatOsmContext._onePixelLngLat.getX(),
+//						// 放射方向のスケール S_GR = (b-a)/(b-a/M)*S_C.
+//						getLngLatOsmContext._onePixelLngLat.getY()
+//					),
+//					DEFAULT_LNGLAT,
+//					new Point(WINDOW_WIDTH,WINDOW_HEIGHT),
+//					true
+//				)
+//			);
+			
+//			System.out.println("SGC   : "+((double)(GLUE_OUTER_RADIUS-(GLUE_INNER_RADIUS+i))/(GLUE_OUTER_RADIUS-GLUE_INNER_RADIUS)*Math.pow(2, FOCUS_SCALE-CONTEXT_SCALE)+
+//					(double)((GLUE_INNER_RADIUS+i)-GLUE_INNER_RADIUS)/(GLUE_OUTER_RADIUS-GLUE_INNER_RADIUS)));
+//			System.out.println("S_GR  : "+((double)(GLUE_OUTER_RADIUS-GLUE_INNER_RADIUS)/(GLUE_OUTER_RADIUS-GLUE_INNER_RADIUS/Math.pow(2, FOCUS_SCALE-CONTEXT_SCALE))));
 		}
+//		System.exit(0);
 		long end = System.currentTimeMillis();
 		return arrayConvert;
 	}
@@ -192,37 +227,82 @@ public class DrawElasticRoad {
 		osmRoadDataGeom.startConnection();
 		Point p1Xy;
 		Point p2Xy;
+		
+		// todo.
+		// 地理座標系でなく投影座標系で考える(UTMなど).
+		// ->長さをメートルで考えられる.
+		
 		for(ArrayList<Line2D> arrArc : __arc){
 			for(Line2D arc : arrArc){
 				// 2点の緯度経度から中心までの距離(メートル)を求める.
-				
 				double p1Meter = osmRoadDataGeom.calcMeterLength(DEFAULT_LNGLAT, arc.getP1());
 				double p2Meter = osmRoadDataGeom.calcMeterLength(DEFAULT_LNGLAT, arc.getP2());
+				// 2点の緯度経度ぞれぞれの中心からの角度(ラジアン)を求める(3時の方角から反時計回り).
+				double p1angle = osmRoadDataGeom.calcAzimath(DEFAULT_LNGLAT, arc.getP1());
+				double p2angle = osmRoadDataGeom.calcAzimath(DEFAULT_LNGLAT,  arc.getP2());
 				// p1について.
 				if(p1Meter < glueInnerRadiusMeter){	// focus領域にある.
 					p1Xy = _convertFocus.convertLngLatToXyCoordinate(arc.getP1());
-//					continue;
+					continue;
 				}else if ( glueInnerRadiusMeter < p1Meter && p1Meter < glueOuterRadiusMeter){// glue領域にある.
-					// glue内側から見て何パーセントの位置にあるか.
-					int glueRatio = (int)((p1Meter-glueInnerRadiusMeter)/(glueOuterRadiusMeter - glueInnerRadiusMeter)*100);
-					p1Xy = _arrayConvert.get(glueRatio).convertLngLatToXyCoordinate(arc.getP1());
+					// glue内側から見て何パーセントの位置にあるか(0~1).
+					double glueRatio = ((p1Meter-glueInnerRadiusMeter)/(glueOuterRadiusMeter - glueInnerRadiusMeter));
+					// glueの外側から見て何パーセントの位置にあるか.
+					double glueOuterRatio = (((glueOuterRadiusMeter - glueInnerRadiusMeter)-(p1Meter-glueInnerRadiusMeter))/(glueOuterRadiusMeter - glueInnerRadiusMeter));
+					// contextのxy座標.
+					p1Xy = _convertContext.convertLngLatToXyCoordinate(arc.getP1());
+					// 中心を原点とした平面座標(y軸は上向き).
+					Point p1Plane = new Point((int)(p1Xy.getX()-WINDOW_WIDTH/2), -1* (int)(p1Xy.getY()-WINDOW_HEIGHT/2));
+					// 極座標系に変換.
+					Point2D p1Polar = ConvertPolarPlaneCoordinate.convertPlaneToPolar(p1Plane);
+					// 変形.
+					// ｘは２(focus)～１(context)の間.
+					p1Polar = new Point2D.Double(p1Polar.getX(), p1Polar.getY());
+//					p1Polar = new Point2D.Double(p1Polar.getX()*__concentricCircleScaleArray.get((int)(glueRatio*GLUE_SCALE_NUM)), p1Polar.getY());
+//					p1Polar = new Point2D.Double(p1Polar.getX()*1, p1Polar.getY());
+					// 極座標系から原点を中心とした平面座標へと変換.
+					p1Plane = ConvertPolarPlaneCoordinate.convertPolarToPlane(p1Polar);
+					// 左上を原点としたxy座標へと変換(y軸は下向き).
+					p1Xy = new Point(p1Plane.x+WINDOW_WIDTH/2, (-1 * p1Plane.y+WINDOW_HEIGHT/2)); 
+//					System.out.println(glueRatio);
+					System.out.println(glueOuterRatio);
+//					System.out.println();
+//					System.out.println(((__concentricCircleScaleArray.get((int)(glueRatio*GLUE_SCALE_NUM))*-1)+3));
+					System.out.println(p1Xy.getX()+"  a  "+p1Xy.getY());
+//					p1Xy = _arrayConvert.get((int)glueRatio*GLUE_SCALE_NUM).convertLngLatToXyCoordinate(arc.getP1());
 //					continue;
 				}else{// context領域にある.
 					p1Xy = _convertContext.convertLngLatToXyCoordinate(arc.getP1());
-//					continue;
+					continue;
 				}
 				// p2について.
 				if(p2Meter < glueInnerRadiusMeter){	// focus領域にある.
 					p2Xy = _convertFocus.convertLngLatToXyCoordinate(arc.getP2());
-//					continue;
+					continue;
 				}else if ( glueInnerRadiusMeter < p2Meter && p2Meter < glueOuterRadiusMeter){// glue領域にある.
-					// glue内側から見て何パーセントの位置にあるか.
-					int glueRatio = (int)((p2Meter-glueInnerRadiusMeter)/(glueOuterRadiusMeter - glueInnerRadiusMeter)*100);
-					p2Xy = _arrayConvert.get(glueRatio).convertLngLatToXyCoordinate(arc.getP2());
+					// glue内側から見て何パーセントの位置にあるか(0~1).
+					double glueRatio = ((p2Meter-glueInnerRadiusMeter)/(glueOuterRadiusMeter - glueInnerRadiusMeter));
+					// glueの外側から見て何パーセントの位置にあるか.
+					double glueOuterRatio = (((glueOuterRadiusMeter - glueInnerRadiusMeter)-(p2Meter-glueInnerRadiusMeter))/(glueOuterRadiusMeter - glueInnerRadiusMeter));
+					p2Xy = _convertContext.convertLngLatToXyCoordinate(arc.getP2());
+					// 中心を原点とした平面座標(y軸は上向き).
+					Point p2Plane = new Point((int)(p2Xy.getX()-WINDOW_WIDTH/2), -1* (int)(p2Xy.getY()-WINDOW_HEIGHT/2));
+					// 極座標系に変換.
+					Point2D p2Polar = ConvertPolarPlaneCoordinate.convertPlaneToPolar(p2Plane);
+					// 変形.
+					p2Polar = new Point2D.Double(p2Polar.getX(), p2Polar.getY());
+//					p2Polar = new Point2D.Double(p2Polar.getX()*__concentricCircleScaleArray.get((int)(glueRatio*GLUE_SCALE_NUM)), p2Polar.getY());
+//					p2Polar = new Point2D.Double(p2Polar.getX()*1, p2Polar.getY());
+					// 極座標系から原点を中心とした平面座標へと変換.
+					p2Plane = ConvertPolarPlaneCoordinate.convertPolarToPlane(p2Polar);
+					// 左上を原点としたxy座標へと変換(y軸は下向き).
+					p2Xy = new Point(p2Plane.x+WINDOW_WIDTH/2, (-1 * p2Plane.y+WINDOW_HEIGHT/2)); 
+
+//					p2Xy = _arrayConvert.get((int)glueRatio*GLUE_SCALE_NUM).convertLngLatToXyCoordinate(arc.getP2());
 //					continue;
 				}else{// context領域にある.
 					p2Xy = _convertContext.convertLngLatToXyCoordinate(arc.getP2());
-//					continue;
+					continue;
 				}
 				System.out.println("drawLine");
 				paint2dLine(new Line2D.Double(p1Xy, p2Xy), Color.pink, (float)3);
