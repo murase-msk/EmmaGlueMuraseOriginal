@@ -37,7 +37,7 @@ public class MainServlet extends HttpServlet{
 		System.out.println("postRequest");
 		
 		if(request.getParameter("type")==null){
-			System.out.println("\"type\" parameter not found");
+			ErrorMsg.errorResponse(request, response, "typeパラメータがありません");
 			return;
 		}
 		
@@ -56,10 +56,9 @@ public class MainServlet extends HttpServlet{
 		case "Test":
 			new Test(request, response);
 			break;
-		case "" :
-			break;
-
 		default:
+			ErrorMsg.errorResponse(request, response, "typeパラメータの値が正しくありません");
+			return;
 		}
 	}
 

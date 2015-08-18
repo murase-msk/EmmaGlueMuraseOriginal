@@ -5,9 +5,12 @@ import java.awt.geom.Point2D;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 
+import javax.smartcardio.Card;
+
 import org.apache.naming.java.javaURLContextFactory;
 import org.postgis.PGgeometry;
 
+import servlet.DrawElasticRoad;
 import src.db.GeometryParsePostgres;
 import src.db.HandleDbTemplateSuper;
 
@@ -63,7 +66,7 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 	/**
 	 * 矩形範囲のデータを取り出す
 	 */
-	public void insertOsmRoadData(Point2D aUpperLeftLngLat, Point2D aLowerRightLngLat){
+	public void insertOsmRoadData(Point2D aUpperLeftLngLat, Point2D aLowerRightLngLat, String aRoadType){
 		_linkId = new ArrayList<>();
 		_link = new ArrayList<>();
 		_sourceId = new ArrayList<>();
@@ -72,13 +75,13 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 		_length2 = new ArrayList<>();
 		_clazz = new ArrayList<>();
 		_arc = new ArrayList<>();
-		
+		String table = (aRoadType.equals("bikeFoot") ? "osm_japan_bike_foot_2po_4pgr" : "osm_japan_car_2po_4pgr");
 		try{
 			String statement;
 			// SRID=4326.
 			statement = "select " +
 					" id, osm_name,osm_source_id, osm_target_id, clazz, source, target, km, cost, x1, y1, x2, y2, geom_way" +
-					" from osm_japan_car_2po_4pgr " +
+					" from " + table + " " +
 					" where" +
 					" st_intersects(" +
 						"st_geomFromText(" +

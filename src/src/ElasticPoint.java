@@ -3,7 +3,7 @@ package src;
 import java.awt.geom.Point2D;
 
 /**
- * 点を変形させる
+ * glue領域の点を変形させる処理に関するクラス
  * @author murase
  *
  */

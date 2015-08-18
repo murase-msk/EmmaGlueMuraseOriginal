@@ -116,7 +116,7 @@ public class DrawElasticStroke {
 		OsmRoadDataGeom osmRoadDataGeom = new OsmRoadDataGeom();
 		osmRoadDataGeom.startConnection();
 		// 矩形範囲内の道路データを取得する.
-		osmRoadDataGeom.insertOsmRoadData(_getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat);
+		osmRoadDataGeom.insertOsmRoadData(_getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat, "car");
 		osmRoadDataGeom.__arc = osmRoadDataGeom._arc;
 		osmRoadDataGeom.endConnection();
 		// // focus, contextの道路の描画.
