@@ -15,7 +15,9 @@ import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import src.ElasticPoint;
 import src.coordinate.ConvertLngLatXyCoordinate;
+import src.coordinate.ConvertMercatorXyCoordinate;
 import src.coordinate.GetLngLatOsm;
 import src.coordinate.LngLatMercatorUtility;
 import src.db.getData.OsmRoadDataGeom;
@@ -23,26 +25,21 @@ import src.db.getData.OsmStrokeDataGeom;
 
 public class DrawElasticStroke {
 	
-	/** 地図パネルの横幅. */
-	public static  int WINDOW_WIDTH = 700;
-	/** 地図パネルの高さ. */
-	public static  int WINDOW_HEIGHT = 700;
-	/** 初期の経度. */
-	private static final double DEFAULT_LNG = 136.9309671669116;	// 鶴舞公園.
-	/** 初期の緯度. */
-	private static final double DEFAULT_LAT = 35.15478942665804;	// 鶴舞公園.
+	/** 地図の大きさ */
+	public Point windowSize = new Point(700, 700);
 	/** 初期の緯度経度Point2D形式 */
-	private static final Point2D.Double DEFAULT_LNGLAT = new Point2D.Double(DEFAULT_LNG, DEFAULT_LAT);
-	
-	
+	private  Point2D.Double centerLngLat = new Point2D.Double(136.9309671669116, 35.15478942665804);// 鶴舞公園.
 	/** focusのスケール */
-	private static final int FOCUS_SCALE = 16;
+	private int focusScale = 17;
 	/** contextのスケール */
-	private static final int CONTEXT_SCALE = 15;
-	/** glue内側の半径 */
-	private static final int GLUE_INNER_RADIUS=200;
-	/** glue外側の半径 */
-	private static final int GLUE_OUTER_RADIUS=300;
+	private int contextScale = 15;
+	/** glue内側の半径(pixel) */
+	private int glueInnerRadius=200;
+	/** glue外側の半径(pixel) */
+	private int glueOuterRadius=300;
+	
+	/** 道路の種類(car, bikeFoot) */
+	public String roadType = "car";
 	
 	// 中心点からglue内側の長さ.
 	public double glueInnerRadiusMeter;
@@ -59,21 +56,39 @@ public class DrawElasticStroke {
 	public GetLngLatOsm _getLngLatOsmContext;
 	/** context領域の緯度経度xy変換 */
 	public ConvertLngLatXyCoordinate _convertContext;
-	/** glue領域の緯度経度xy変換 */
-	public ArrayList<ConvertLngLatXyCoordinate> _arrayConvert;
+	/** メルカトル座標系xy変換 */
+	public ConvertMercatorXyCoordinate _contextMercatorConvert;
 
 	
 	public DrawElasticStroke(HttpServletRequest request, HttpServletResponse response) {
 		
+		// 必須パラメータがあるか.
+		if(request.getParameter("centerLngLat")==null ||
+				request.getParameter("focus_zoom_level")==null ||
+				request.getParameter("context_zoom_level")==null ||
+				request.getParameter("glue_inner_radius")==null ||
+				request.getParameter("glue_outer_radius")==null
+				){
+			ErrorMsg.errorResponse(request, response, "必要なパラメータがありません");
+			return;
+		}
+		// パラメータの受け取り.
+		centerLngLat = new Point2D.Double(
+				Double.parseDouble(request.getParameter("centerLngLat").split(",")[0]), 
+				Double.parseDouble(request.getParameter("centerLngLat").split(",")[1]));
+		focusScale = Integer.parseInt(request.getParameter("focus_zoom_level"));
+		contextScale = Integer.parseInt(request.getParameter("context_zoom_level"));
+		glueInnerRadius = Integer.parseInt(request.getParameter("glue_inner_radius"));
+		glueOuterRadius = Integer.parseInt(request.getParameter("glue_outer_radius"));
+		windowSize = new Point(glueOuterRadius*2, glueOuterRadius*2);
+		roadType = request.getParameter("roadType") == null  ? "car" : request.getParameter("roadType");
 		try{
 			OutputStream out=response.getOutputStream();
-			//BufferedImage img = emgd.getEmGlueImage(param);
 			ImageIO.write( drawImage(), "png", out);
 			
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-
 		
 	}
 	
@@ -83,30 +98,32 @@ public class DrawElasticStroke {
 	 */
 	private BufferedImage drawImage(){
 		BufferedImage bfImage=null;
-		bfImage=new BufferedImage( WINDOW_WIDTH, WINDOW_HEIGHT, BufferedImage.TYPE_INT_ARGB);
+		bfImage=new BufferedImage( windowSize.x, windowSize.y, BufferedImage.TYPE_INT_ARGB);
 		_graphics2d = (Graphics2D) bfImage.getGraphics();
 		// アンチエイリアス設定：遅いときは次の行をコメントアウトする.
 		_graphics2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
 		//focus用の緯度経度xy変換
-		_getLngLatOsmFocus = new GetLngLatOsm(new Point2D.Double(DEFAULT_LNG, DEFAULT_LAT), FOCUS_SCALE, new Point(WINDOW_WIDTH, WINDOW_HEIGHT));
+		_getLngLatOsmFocus = new GetLngLatOsm(centerLngLat, focusScale, windowSize);
 		_convertFocus = new ConvertLngLatXyCoordinate((Point2D.Double)_getLngLatOsmFocus._upperLeftLngLat,
-				(Point2D.Double)_getLngLatOsmFocus._lowerRightLngLat, new Point(WINDOW_WIDTH, WINDOW_HEIGHT));
+				(Point2D.Double)_getLngLatOsmFocus._lowerRightLngLat, windowSize);
 		//context用の緯度経度xy変換
-		_getLngLatOsmContext = new GetLngLatOsm(new Point2D.Double(DEFAULT_LNG, DEFAULT_LAT), CONTEXT_SCALE, new Point(WINDOW_WIDTH, WINDOW_HEIGHT));
+		_getLngLatOsmContext = new GetLngLatOsm(centerLngLat, contextScale, windowSize);
 		_convertContext = new ConvertLngLatXyCoordinate((Point2D.Double)_getLngLatOsmContext._upperLeftLngLat,
-				(Point2D.Double)_getLngLatOsmContext._lowerRightLngLat, new Point(WINDOW_WIDTH, WINDOW_HEIGHT));
-		glueInnerRadiusMeter = GLUE_INNER_RADIUS*_convertFocus.meterPerPixel.getX();
-		glueOuterRadiusMeter = GLUE_OUTER_RADIUS*_convertContext.meterPerPixel.getX();
-		// 100種類のの変換オブジェクト.
-		_arrayConvert = calcArrayConvert();
-		
+				(Point2D.Double)_getLngLatOsmContext._lowerRightLngLat, windowSize);
+		glueInnerRadiusMeter = glueInnerRadius*_convertFocus.meterPerPixel.getX();
+		glueOuterRadiusMeter = glueOuterRadius*_convertContext.meterPerPixel.getX();
+		// contextでのメルカトル座標系xy変換.
+		_contextMercatorConvert = new ConvertMercatorXyCoordinate(
+				LngLatMercatorUtility.ConvertLngLatToMercator((Point2D.Double)_getLngLatOsmContext._upperLeftLngLat), 
+				LngLatMercatorUtility.ConvertLngLatToMercator((Point2D.Double)_getLngLatOsmContext._lowerRightLngLat), windowSize);
+
 		
 		// ストローク取得.
 		OsmStrokeDataGeom osmStrokeDataGeom = new OsmStrokeDataGeom();
 		osmStrokeDataGeom.startConnection();
-		Point upperLeftOuterGlueXY = new Point(WINDOW_WIDTH/2-GLUE_OUTER_RADIUS, WINDOW_WIDTH/2-GLUE_OUTER_RADIUS);
-		Point LowerRightOuterGlueXY = new Point(WINDOW_WIDTH/2-GLUE_OUTER_RADIUS + GLUE_OUTER_RADIUS*2, WINDOW_WIDTH/2-GLUE_OUTER_RADIUS + GLUE_OUTER_RADIUS*2);
+		Point upperLeftOuterGlueXY = new Point(windowSize.x/2-glueOuterRadius, windowSize.x/2-glueOuterRadius);
+		Point LowerRightOuterGlueXY = new Point(windowSize.x/2-glueOuterRadius + glueOuterRadius*2, windowSize.x/2-glueOuterRadius + glueOuterRadius*2);
 		osmStrokeDataGeom.cutOutStroke(_convertContext.convertXyCoordinateToLngLat(upperLeftOuterGlueXY), _convertContext.convertXyCoordinateToLngLat(LowerRightOuterGlueXY));
 		osmStrokeDataGeom.endConnection();
 		// glue部分だけ先に描画
@@ -124,44 +141,16 @@ public class DrawElasticStroke {
 		
 		_graphics2d.setColor(Color.red);
 		// 中心点.
-		_graphics2d.drawOval(WINDOW_WIDTH/2-2, WINDOW_WIDTH/2-2, 4, 4);
+		_graphics2d.drawOval(windowSize.x/2-2, windowSize.x/2-2, 4, 4);
 		// glue領域内側想定範囲.
-		_graphics2d.drawOval(WINDOW_WIDTH/2-GLUE_INNER_RADIUS, WINDOW_WIDTH/2-GLUE_INNER_RADIUS, GLUE_INNER_RADIUS*2, GLUE_INNER_RADIUS*2);
+		_graphics2d.drawOval(windowSize.x/2-glueInnerRadius, windowSize.x/2-glueInnerRadius, glueInnerRadius*2, glueInnerRadius*2);
 		// glue領域外側想定範囲.
-		_graphics2d.drawOval(WINDOW_WIDTH/2-GLUE_OUTER_RADIUS, WINDOW_WIDTH/2-GLUE_OUTER_RADIUS, GLUE_OUTER_RADIUS*2, GLUE_OUTER_RADIUS*2);
+		_graphics2d.drawOval(windowSize.x/2-glueOuterRadius, windowSize.x/2-glueOuterRadius, glueOuterRadius*2, glueOuterRadius*2);
 		
 		return bfImage;
 	}
 
-	/**
-	 * glueの内側から外側までの座標変換のオブジェクト生成(100個生成する)
-	 * focusからcontextまで行くと縦横(1/2)になるとする
-	 * 例:glue内側からglue外側まで100pixelあるとするとXpixel移動するとスケールはfocusスケールの2^(X/100)倍になる
-	 * @return
-	 */
-	public ArrayList<ConvertLngLatXyCoordinate> calcArrayConvert(){
-		ArrayList<ConvertLngLatXyCoordinate> arrayConvert= new ArrayList<>();
-		// 端点の緯度経度を求める.
-		GetLngLatOsm getLngLatOsmFocus = new GetLngLatOsm(new Point2D.Double(DEFAULT_LNG, DEFAULT_LAT), FOCUS_SCALE, new Point(WINDOW_WIDTH, WINDOW_HEIGHT));
-		GetLngLatOsm getLngLatOsmContext = new GetLngLatOsm(new Point2D.Double(DEFAULT_LNG, DEFAULT_LAT), CONTEXT_SCALE, new Point(WINDOW_WIDTH, WINDOW_HEIGHT));
-		// contextとglueの端点の緯度経度の差.
-		Point2D.Double diffLngLat = new Point2D.Double(
-				Math.abs(getLngLatOsmFocus._upperLeftLngLat.getX() - getLngLatOsmContext._upperLeftLngLat.getX()), 
-				Math.abs(getLngLatOsmFocus._upperLeftLngLat.getY() - getLngLatOsmContext._upperLeftLngLat.getY())
-				);
-		// 緯度経度とXy座標の変換用インスタンス.
-//		_convert = new ConvertLngLatXyCoordinate((Point2D.Double)getLngLatOsm._upperLeftLngLat,
-//				(Point2D.Double)getLngLatOsm._lowerRightLngLat, new Point(1000, 1000));		
-		for(int i=0; i<100; i++){
-			arrayConvert.add(new ConvertLngLatXyCoordinate(
-					new Point2D.Double(getLngLatOsmFocus._upperLeftLngLat.getX()-(diffLngLat.getX()*i/100), getLngLatOsmFocus._upperLeftLngLat.getY()+(diffLngLat.getY()*i/100)),
-					new Point2D.Double(getLngLatOsmFocus._lowerRightLngLat.getX()+(diffLngLat.getX()*i/100), getLngLatOsmFocus._lowerRightLngLat.getY()-(diffLngLat.getY()*i/100)),
-					new Point(WINDOW_WIDTH, WINDOW_HEIGHT)));
-		}
-		long end = System.currentTimeMillis();
-		return arrayConvert;
-	}
-	
+
 	/////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////
 	///////////////////道路描画について//////////////////////////////////////
@@ -175,23 +164,31 @@ public class DrawElasticStroke {
 		osmRoadDataGeom.startConnection();
 		Point p1Xy;
 		Point p2Xy;
+		
+		// 点を歪める準備.
+		ElasticPoint elasticPoint = new ElasticPoint(
+				_contextMercatorConvert.mercatorPerPixel.getX()*glueInnerRadius, 
+				_contextMercatorConvert.mercatorPerPixel.getX()*glueOuterRadius, 
+				Math.pow(2, focusScale-contextScale), 
+				LngLatMercatorUtility.ConvertLngLatToMercator(centerLngLat));
+		
 		//for(ArrayList<Line2D> arrArc : __arc){
 		for(int i=0; i<30; i++){	// 上位30本だけ.
 			for(Line2D arc : __arc.get(i)){
 				// 2点の緯度経度から中心までの距離(メートル)を求める.
-				double p1Meter = LngLatMercatorUtility.calcDistanceFromLngLat(DEFAULT_LNGLAT, arc.getP1());
-				double p2Meter = LngLatMercatorUtility.calcDistanceFromLngLat(DEFAULT_LNGLAT, arc.getP2());
+				double p1Meter = LngLatMercatorUtility.calcDistanceFromLngLat(centerLngLat, arc.getP1());
+				double p2Meter = LngLatMercatorUtility.calcDistanceFromLngLat(centerLngLat, arc.getP2());
 				boolean p1GlueFlg = false;// p1がglue領域にあるか.
 				// p1について.
 				if(p1Meter < glueInnerRadiusMeter){	// focus領域にある.
 					p1Xy = _convertFocus.convertLngLatToXyCoordinate(arc.getP1());
 //					continue;
 				}else if ( glueInnerRadiusMeter < p1Meter && p1Meter < glueOuterRadiusMeter){// glue領域にある.
-					// glue内側から見て何パーセントの位置にあるか.
-					int glueRatio = (int)((p1Meter-glueInnerRadiusMeter)/(glueOuterRadiusMeter - glueInnerRadiusMeter)*100);
-					p1Xy = _arrayConvert.get(glueRatio).convertLngLatToXyCoordinate(arc.getP1());
+					// glue内側から見て何パーセントの位置にあるか(0~1).
+					double glueRatio = (p1Meter-glueInnerRadiusMeter)/(glueOuterRadiusMeter - glueInnerRadiusMeter);
+					Point2D elasticPointMercator = elasticPoint.calcElasticPoint(LngLatMercatorUtility.ConvertLngLatToMercator(arc.getP1()), glueRatio);
+					p1Xy = _contextMercatorConvert.convertMercatorToXyCoordinate(elasticPointMercator);
 					p1GlueFlg = true;
-//					continue;
 				}else{// context領域にある.
 					p1Xy = _convertContext.convertLngLatToXyCoordinate(arc.getP1());
 //					continue;
@@ -203,9 +200,10 @@ public class DrawElasticStroke {
 						continue;
 					}
 				}else if ( glueInnerRadiusMeter < p2Meter && p2Meter < glueOuterRadiusMeter){// glue領域にある.
-					// glue内側から見て何パーセントの位置にあるか.
-					int glueRatio = (int)((p2Meter-glueInnerRadiusMeter)/(glueOuterRadiusMeter - glueInnerRadiusMeter)*100);
-					p2Xy = _arrayConvert.get(glueRatio).convertLngLatToXyCoordinate(arc.getP2());
+					// glue内側から見て何パーセントの位置にあるか(0~1).
+					double glueRatio = (p2Meter-glueInnerRadiusMeter)/(glueOuterRadiusMeter - glueInnerRadiusMeter);
+					Point2D elasticPointMercator = elasticPoint.calcElasticPoint(LngLatMercatorUtility.ConvertLngLatToMercator(arc.getP2()), glueRatio);
+					p2Xy = _contextMercatorConvert.convertMercatorToXyCoordinate(elasticPointMercator);
 //					continue;
 				}else{// context領域にある.
 					p2Xy = _convertContext.convertLngLatToXyCoordinate(arc.getP2());
@@ -213,7 +211,6 @@ public class DrawElasticStroke {
 						continue;
 					}
 				}
-				System.out.println("draw stroke");
 				paint2dLine(new Line2D.Double(p1Xy, p2Xy), Color.pink, (float)3);
 			}
 		}
@@ -233,8 +230,8 @@ public class DrawElasticStroke {
 			for(Line2D arc : arrArc){
 				// 2点の緯度経度から中心までの距離(メートル)を求める.
 				
-				double p1Meter = LngLatMercatorUtility.calcDistanceFromLngLat(DEFAULT_LNGLAT, arc.getP1());
-				double p2Meter = LngLatMercatorUtility.calcDistanceFromLngLat(DEFAULT_LNGLAT, arc.getP2());
+				double p1Meter = LngLatMercatorUtility.calcDistanceFromLngLat(centerLngLat, arc.getP1());
+				double p2Meter = LngLatMercatorUtility.calcDistanceFromLngLat(centerLngLat, arc.getP2());
 				// p1について.
 				if(p1Meter < glueInnerRadiusMeter){	// focus領域にある.
 					p1Xy = _convertFocus.convertLngLatToXyCoordinate(arc.getP1());
@@ -261,7 +258,6 @@ public class DrawElasticStroke {
 					p2Xy = _convertContext.convertLngLatToXyCoordinate(arc.getP2());
 //					continue;
 				}
-				System.out.println("drawLine");
 				paint2dLine(new Line2D.Double(p1Xy, p2Xy), Color.pink, (float)3);
 			}
 		}

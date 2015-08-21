@@ -178,6 +178,7 @@ public class DrawElasticRoad {
 		// あるセグメントにおける終点.
 		Point p2Xy;
 		
+		// 点を歪める準備.
 		ElasticPoint elasticPoint = new ElasticPoint(
 				_contextMercatorConvert.mercatorPerPixel.getX()*glueInnerRadius, 
 				_contextMercatorConvert.mercatorPerPixel.getX()*glueOuterRadius, 

@@ -4,10 +4,10 @@
 glueサーバを作るかも
 
 
-* http://localhost:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticStroke
+* <http://localhost:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticStroke&centerLngLat=136.9309671669116,35.15478942665804&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300>
 	- glueをstrokeにしてみた
 
-* http://localhost:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticRoad
+* <http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticRoad&centerLngLat=136.9309,35.1547&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300&roadType=car>
 	- focus,glue,contexっぽい地図を作製した
 
 * http://localhost:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawSimpleRoad
@@ -19,8 +19,16 @@ glueサーバを作るかも
 
 # バージョン履歴
 
+## v2_1_1
+ストロークに対応
+
+
 ## v2_1_0
 URLのパラメータの設定可能
+
+<http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticRoad&centerLngLat=136.9309,35.1547&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300&roadType=car>
+
+
 ## v2_0_3
 細かい修正
 
