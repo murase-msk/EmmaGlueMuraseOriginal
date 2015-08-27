@@ -42,6 +42,7 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 	public ArrayList<Integer> _clazz;
 	/** 道路の形状を表す */
 	public ArrayList<ArrayList<Line2D>> _arc;
+	public ArrayList<ArrayList<Point2D>> _arc2;
 	
 	//////////////////////////
 	/** リンクID */
@@ -58,6 +59,7 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 	public ArrayList<Integer> __clazz;
 	/** 道路の形状を表す */
 	public ArrayList<ArrayList<Line2D>> __arc;
+	public ArrayList<ArrayList<Point2D>> __arc2;
 	
 	public OsmRoadDataGeom(){
 		super(DBNAME, USER, PASS, DBURL, HandleDbTemplateSuper.POSTGRESJDBCDRIVER_STRING);
@@ -75,7 +77,9 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 		_length2 = new ArrayList<>();
 		_clazz = new ArrayList<>();
 		_arc = new ArrayList<>();
+		_arc2 = new ArrayList<>();
 		String table = (aRoadType.equals("bikeFoot") ? "osm_japan_bike_foot_2po_4pgr" : "osm_japan_car_2po_4pgr");
+		table = aRoadType.equals("rail") ? "osm_japan_rail_2po_4pgr": table;
 		try{
 			String statement;
 			// SRID=4326.
@@ -94,8 +98,6 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 							"))',"+WGS84_EPSG_CODE+
 						"), "+
 					"geom_way) " +
-					" and " +
-					" clazz > 12" +
 					"";
 			System.out.println(statement);
 			ResultSet rs = execute(statement);
@@ -107,8 +109,8 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 				_length.add(rs.getDouble("km"));
 				_length2.add(rs.getDouble("cost"));
 				_clazz.add(rs.getInt("clazz"));
-//				System.out.println(GeometryParsePostgres.getLineStringMultiPoint((PGgeometry)rs.getObject("geom")));
 				_arc.add(GeometryParsePostgres.getLineStringMultiLine((PGgeometry)rs.getObject("geom_way")));
+				_arc2.add(GeometryParsePostgres.getLineStringMultiLine2((PGgeometry)rs.getObject("geom_way")));
 			}
 			rs.close();
 			} catch (Exception e) {

@@ -1,4 +1,4 @@
-package servlet;
+package servlet.sample;
 
 import java.awt.Color;
 import java.awt.Graphics2D;

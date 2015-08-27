@@ -46,8 +46,6 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 	public ArrayList<Double> _strokeLength = new ArrayList<>();
 	/** ストロークIDからインデックスを求めるハッシュ */
 	public HashMap<Integer, Integer> _strokeIdToIndexHash = new HashMap<>();
-	/** geojson形式 */
-	public ArrayList<String> _geojson = new ArrayList<>();
 	
 	
 	/**
@@ -59,14 +57,12 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 		_strokeArc = new ArrayList<>();
 		_strokeArcString = new ArrayList<>();
 		_strokeIdToIndexHash = new HashMap<>();
-		_geojson = new ArrayList<>();
 		try{
 			String statement;
 			statement = "select "+
 					" id, length,"+
 					" flatted_arc_series, " +
-					" st_asText(flatted_arc_series) as strokeString," +
-					" st_asGeoJson(flatted_arc_series) as geojson " +
+					" st_asText(flatted_arc_series) as strokeString" +
 					" from "+SCHEMA+"."+TBNAME2+" " +
 					" where" +
 					" st_intersects(" +
@@ -80,7 +76,7 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 								aUpperLeftLngLat.getX()+" "+aUpperLeftLngLat.getY()+
 								"))'," +
 							""+HandleDbTemplateSuper.WGS84_EPSG_CODE+")" +
-						");";
+						") order by length desc;";
 			System.out.println(statement);
 			ResultSet rs = execute(statement);
 			while(rs.next()){
@@ -89,7 +85,6 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 				_strokeArc.add(GeometryParsePostgres.getLineStringMultiLine((PGgeometry)rs.getObject("flatted_arc_series")));
 				_strokeArcString.add(rs.getString("strokeString"));
 				_strokeIdToIndexHash.put(rs.getInt("id"), _strokeId.size()-1);
-				_geojson.add(rs.getString("geojson"));
 			}
 			rs.close();
 		}catch(Exception e){

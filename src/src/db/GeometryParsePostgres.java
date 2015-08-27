@@ -60,6 +60,7 @@ public class GeometryParsePostgres {
 	}
 	/**
 	 * PGeometry(LineStringの複数ポイント)オブジェクトをLine2Dに変換
+	 * deprecated getLineStringMultiLine2()を使うこと
 	 */
 	public static ArrayList<Line2D> getLineStringMultiLine(PGgeometry aGeom){
 		ArrayList<Line2D> lineStringMultiLine = new ArrayList<>();
@@ -72,6 +73,21 @@ public class GeometryParsePostgres {
 			}
 		}
 		return lineStringMultiLine;
+	}
+	/**
+	 * PGeometry(LineStringの複数ポイント)オブジェクトをArrayList<Point2D>に変換
+	 * @param aGeom
+	 * @return
+	 */
+	public static ArrayList<Point2D> getLineStringMultiLine2(PGgeometry aGeom){
+		ArrayList<Point2D> lineStringMultiPoint = new ArrayList<>();
+		if(aGeom.getGeoType() == Geometry.LINESTRING){
+			LineString lineString = (LineString)aGeom.getGeometry(); 
+			for(int i=0; i<lineString.numPoints(); i++){
+				lineStringMultiPoint.add(new Point2D.Double(lineString.getPoint(i).getX(), lineString.getPoint(i).getY()));
+			}
+		}
+		return lineStringMultiPoint;
 	}
 	/**
 	 * PGeometry(MultiLineString)オブジェクトをLine2Dに変換(端点のみ)(linkで取得)

@@ -28,7 +28,7 @@ public class DrawElasticStroke {
 	/** 地図の大きさ */
 	public Point windowSize = new Point(700, 700);
 	/** 初期の緯度経度Point2D形式 */
-	private  Point2D.Double centerLngLat = new Point2D.Double(136.9309671669116, 35.15478942665804);// 鶴舞公園.
+	private  Point2D centerLngLat = new Point2D.Double(136.9309671669116, 35.15478942665804);// 鶴舞公園.
 	/** focusのスケール */
 	private int focusScale = 17;
 	/** contextのスケール */
@@ -41,18 +41,18 @@ public class DrawElasticStroke {
 	/** 道路の種類(car, bikeFoot) */
 	public String roadType = "car";
 	
-	// 中心点からglue内側の長さ.
+	/** 中心点からglue内側の長さ(メートル) */
 	public double glueInnerRadiusMeter;
-	// 中心点からglue外側の長さ.
+	/** 中心点からglue外側の長さ(メートル)  */
 	public double glueOuterRadiusMeter;
 	
-	
+	/** 描画用 */
 	Graphics2D _graphics2d;
-	/** focus */
+	/** focusの端点の緯度経度を求める */
 	public GetLngLatOsm _getLngLatOsmFocus;
 	/** focus領域の緯度経度xy変換 */
 	public ConvertLngLatXyCoordinate _convertFocus;
-	/** context */
+	/** contextの端点の緯度経度を求める */
 	public GetLngLatOsm _getLngLatOsmContext;
 	/** context領域の緯度経度xy変換 */
 	public ConvertLngLatXyCoordinate _convertContext;
@@ -117,27 +117,30 @@ public class DrawElasticStroke {
 		_contextMercatorConvert = new ConvertMercatorXyCoordinate(
 				LngLatMercatorUtility.ConvertLngLatToMercator((Point2D.Double)_getLngLatOsmContext._upperLeftLngLat), 
 				LngLatMercatorUtility.ConvertLngLatToMercator((Point2D.Double)_getLngLatOsmContext._lowerRightLngLat), windowSize);
-
 		
+		//////////////////////////////////////////////
 		// ストローク取得.
 		OsmStrokeDataGeom osmStrokeDataGeom = new OsmStrokeDataGeom();
 		osmStrokeDataGeom.startConnection();
 		Point upperLeftOuterGlueXY = new Point(windowSize.x/2-glueOuterRadius, windowSize.x/2-glueOuterRadius);
 		Point LowerRightOuterGlueXY = new Point(windowSize.x/2-glueOuterRadius + glueOuterRadius*2, windowSize.x/2-glueOuterRadius + glueOuterRadius*2);
-		osmStrokeDataGeom.cutOutStroke(_convertContext.convertXyCoordinateToLngLat(upperLeftOuterGlueXY), _convertContext.convertXyCoordinateToLngLat(LowerRightOuterGlueXY));
+		osmStrokeDataGeom.insertStrokeData(_convertContext.convertXyCoordinateToLngLat(upperLeftOuterGlueXY), _convertContext.convertXyCoordinateToLngLat(LowerRightOuterGlueXY));
 		osmStrokeDataGeom.endConnection();
 		// glue部分だけ先に描画
-		paintGlueStroke(osmStrokeDataGeom._subStrokeArc);
+		paintGlueStroke(osmStrokeDataGeom._strokeArc);
+		//////////////////////////////////////////////
 		
+		//////////////////////////////////////////////
 		// 道路データの取得.
 		OsmRoadDataGeom osmRoadDataGeom = new OsmRoadDataGeom();
 		osmRoadDataGeom.startConnection();
 		// 矩形範囲内の道路データを取得する.
-		osmRoadDataGeom.insertOsmRoadData(_getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat, "car");
+		osmRoadDataGeom.insertOsmRoadData(_getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat, roadType);
 		osmRoadDataGeom.__arc = osmRoadDataGeom._arc;
 		osmRoadDataGeom.endConnection();
 		// // focus, contextの道路の描画.
 		paintRoadData(osmRoadDataGeom.__arc);
+		//////////////////////////////////////////////
 		
 		_graphics2d.setColor(Color.red);
 		// 中心点.
@@ -173,7 +176,7 @@ public class DrawElasticStroke {
 				LngLatMercatorUtility.ConvertLngLatToMercator(centerLngLat));
 		
 		//for(ArrayList<Line2D> arrArc : __arc){
-		for(int i=0; i<30; i++){	// 上位30本だけ.
+		for(int i=0; i<100; i++){	// 上位30本だけ.
 			for(Line2D arc : __arc.get(i)){
 				// 2点の緯度経度から中心までの距離(メートル)を求める.
 				double p1Meter = LngLatMercatorUtility.calcDistanceFromLngLat(centerLngLat, arc.getP1());

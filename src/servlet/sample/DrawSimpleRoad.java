@@ -1,4 +1,4 @@
-package servlet;
+package servlet.sample;
 
 import java.awt.BasicStroke;
 import java.awt.Color;

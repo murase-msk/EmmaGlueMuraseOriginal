@@ -7,7 +7,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.sun.corba.se.impl.protocol.giopmsgheaders.RequestMessage;
+import servlet.sample.DrawSimpleRoad;
+import servlet.sample.Test;
 
 
 
@@ -49,8 +50,7 @@ public class MainServlet extends HttpServlet{
 		case "DrawElasticRoad":
 			new DrawElasticRoad(request, response);
 			break;
-		case "DrawSimpleRoad" :
-			System.out.println("drawSimpleRoad");
+		case "DrawSimpleRoad":
 			new DrawSimpleRoad(request, response);
 			break;
 		case "Test":
