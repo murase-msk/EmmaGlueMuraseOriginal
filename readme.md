@@ -22,6 +22,11 @@ glueサーバを作るかも
 
 # バージョン履歴
 
+## v2_1_3
+DrawSimplifiedStroke：line simplification機能の追加
+## v2_1_2
+DrawElasticRoad：道路に色を付けた
+
 ## v2_1_1
 ストロークに対応
 
