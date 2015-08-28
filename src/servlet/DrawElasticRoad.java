@@ -132,6 +132,8 @@ public class DrawElasticRoad {
 		
 		
 		// 道路データの取得.
+		ArrayList<ArrayList<Point2D>> roadPath = new ArrayList<>();
+		ArrayList<Integer> clazzList = new ArrayList<>();
 		OsmRoadDataGeom osmRoadDataGeom = new OsmRoadDataGeom();
 		osmRoadDataGeom.startConnection();
 		//////////////////////////////////
@@ -139,13 +141,17 @@ public class DrawElasticRoad {
 		//////////////////////////////////
 		osmRoadDataGeom.insertOsmRoadData(_getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat, roadType);
 		// 道路の描画.
-		paintElasticRoadData(osmRoadDataGeom._arc2, osmRoadDataGeom._clazz);
+		roadPath.addAll(osmRoadDataGeom._arc2);
+		clazzList.addAll(osmRoadDataGeom._clazz);
+//		paintElasticRoadData(osmRoadDataGeom._arc2, osmRoadDataGeom._clazz);
 		//////////////////////////////////
 		// 鉄道データの取得.//////////////////
 		//////////////////////////////////
 		osmRoadDataGeom.insertOsmRoadData(_getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat, "rail");
 		// 鉄道の描画.
-		paintElasticRoadData(osmRoadDataGeom._arc2, osmRoadDataGeom._clazz);
+		roadPath.addAll(osmRoadDataGeom._arc2);
+		clazzList.addAll(osmRoadDataGeom._clazz);
+//		paintElasticRoadData(osmRoadDataGeom._arc2, osmRoadDataGeom._clazz);
 		osmRoadDataGeom.endConnection();
 		
 		// 地下鉄の取得.
@@ -153,7 +159,12 @@ public class DrawElasticRoad {
 		osmLineDataGeom.startConnection();
 		osmLineDataGeom.insertLineDataSpecificColumn("railway", "subway", _getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat);
 		osmLineDataGeom.endConnection();
-		paintElasticRoadData(osmLineDataGeom._arc, osmLineDataGeom._clazz);
+		roadPath.addAll(osmLineDataGeom._arc);
+		clazzList.addAll(osmLineDataGeom._clazz);
+//		paintElasticRoadData(osmLineDataGeom._arc, osmLineDataGeom._clazz);
+
+		// 最後に描画.
+		paintElasticRoadData(roadPath, clazzList);
 		
 		BasicStroke wideStroke = new BasicStroke(3);
 		_graphics2d.setStroke(wideStroke);
@@ -181,14 +192,14 @@ public class DrawElasticRoad {
 	 */
 	public void paintElasticRoadData(ArrayList<ArrayList<Point2D>> aPointSeries, ArrayList<Integer> __clazz){
 		
-		ArrayList<ArrayList<Point2D>> bluePath = new ArrayList<>(); 
-		ArrayList<ArrayList<Point2D>> greenPath = new ArrayList<>();
-		ArrayList<ArrayList<Point2D>> redPath = new ArrayList<>();
-		ArrayList<ArrayList<Point2D>> orangePath = new ArrayList<>();
-		ArrayList<ArrayList<Point2D>> yellowPath = new ArrayList<>();
-		ArrayList<ArrayList<Point2D>> whitePath = new ArrayList<>();
-		ArrayList<ArrayList<Point2D>> railPath = new ArrayList<>();
-		ArrayList<ArrayList<Point2D>> subwayPath = new ArrayList<>();
+		ArrayList<ArrayList<Point2D>> bluePath = new ArrayList<>(); 	// 自動車専用道路(高速道路など).
+		ArrayList<ArrayList<Point2D>> greenPath = new ArrayList<>();	// 国道.
+		ArrayList<ArrayList<Point2D>> redPath = new ArrayList<>();		// 主要地方道.
+		ArrayList<ArrayList<Point2D>> orangePath = new ArrayList<>();	// 一般地方道.
+		ArrayList<ArrayList<Point2D>> yellowPath = new ArrayList<>();	// 一般道(2車線以上).
+		ArrayList<ArrayList<Point2D>> whitePath = new ArrayList<>();	// その他.
+		ArrayList<ArrayList<Point2D>> railPath = new ArrayList<>();		// 電車.
+		ArrayList<ArrayList<Point2D>> subwayPath = new ArrayList<>();	// 地下鉄.
 		
 		// 点を歪める準備.
 		ElasticPoint elasticPoint = new ElasticPoint(
@@ -307,6 +318,7 @@ public class DrawElasticRoad {
 			ArrayList<ArrayList<Point2D>> subwayPath
 		){
 		// 道路クラスごとに描画.
+		// 最初に描画する道路が後ろに来る.
 		for(ArrayList<Point2D> whiteLine: whitePath){
 			paintPath(whiteLine, 8, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(189,189,188));// 枠.
 			paintPath(whiteLine, 7, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(255,255,255));// 中の線.
@@ -327,10 +339,6 @@ public class DrawElasticRoad {
 			paintPath(greenLine, 8, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(0,153,0));
 			paintPath(greenLine, 7, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(148,211,148));
 		}
-		for(ArrayList<Point2D>blueLine: bluePath){
-			paintPath(blueLine, 8, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(40,40,40));
-			paintPath(blueLine, 7, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(137,163,202));
-		}
 		for(ArrayList<Point2D>railLine: railPath){
 			paintPath(railLine, 4, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(255,255,255));
 			float[] dash = { 19.f, 19.f };
@@ -339,6 +347,10 @@ public class DrawElasticRoad {
 		for(ArrayList<Point2D>subwayLine: subwayPath){
 			float[] dash = { 6.f, 6.f };
 			paintPath(subwayLine, 2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(153, 153, 153), (float) 1., dash, (float) 0.);
+		}
+		for(ArrayList<Point2D>blueLine: bluePath){
+			paintPath(blueLine, 8, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(40,40,40));
+			paintPath(blueLine, 7, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(137,163,202));
 		}
 	}
 	

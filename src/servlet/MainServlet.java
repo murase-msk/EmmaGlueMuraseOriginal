@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import servlet.sample.DrawSimpleRoad;
+import servlet.sample.DrawSimplifiedStroke;
 import servlet.sample.Test;
 
 
@@ -50,6 +51,8 @@ public class MainServlet extends HttpServlet{
 		case "DrawElasticRoad":
 			new DrawElasticRoad(request, response);
 			break;
+		case "DrawSimplifiedStroke":
+			new DrawSimplifiedStroke(request, response);
 		case "DrawSimpleRoad":
 			new DrawSimpleRoad(request, response);
 			break;

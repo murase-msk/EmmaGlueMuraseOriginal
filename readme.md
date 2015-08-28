@@ -4,16 +4,19 @@
 glueサーバを作るかも
 
 
-* <http://localhost:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticStroke&centerLngLat=136.9309671669116,35.15478942665804&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300>
+* <http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticStroke&centerLngLat=136.9309671669116,35.15478942665804&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300>
 	- glueをstrokeにしてみた
-
+	- ![p1](p1.png)
 * <http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticRoad&centerLngLat=136.9309,35.1547&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300&roadType=car>
 	- focus,glue,contexっぽい地図を作製した
-
-* http://localhost:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawSimpleRoad
+	- ![p1](p2.png)
+* <http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawSimplifiedStroke&centerLngLat=136.9309671669116,35.15478942665804&scale=15&threshold=50>
+	- l2errorNormを使ってline simplification
+	- ![p1](p3.png)
+* <http://localhost:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawSimpleRoad>
 	- DBから道路データを取得し，描画後，画像データとしてクライアントに返す
 
-* http://localhost:8080/EmmaGlueMuraseOriginal/MainServlet?type=Test
+* <http://localhost:8080/EmmaGlueMuraseOriginal/MainServlet?type=Test>
 	- サーブレットで描画した図形を画像データとしてクライアントに返す
 
 

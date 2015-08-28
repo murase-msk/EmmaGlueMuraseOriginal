@@ -69,7 +69,7 @@ public class OsmLineDataGeom extends HandleDbTemplateSuper{
 			System.out.println(stmt);
 			ResultSet rs = execute(stmt);
 			while(rs.next()){
-				_clazz.add(2);
+				_clazz.add(2);	// 地下鉄はすべて２.
 				_arc.add(GeometryParsePostgres.getLineStringMultiLine2((PGgeometry)rs.getObject("way")));
 			}
 		}catch(Exception e){

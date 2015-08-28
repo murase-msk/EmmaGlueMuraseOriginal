@@ -40,6 +40,7 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 	// 切り出さずにそのままのストローク.
 	/** データベースからそのまま取り出したストローク(arc形式) */
 	public ArrayList<ArrayList<Line2D>> _strokeArc = new ArrayList<>();
+	public ArrayList<ArrayList<Point2D>> _strokeArcPoint = new ArrayList<>();
 	/** ストロークのWKT形式 */
 	public ArrayList<String> _strokeArcString = new ArrayList<>();
 	/** ストロークの長さ */
@@ -55,6 +56,7 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 		_strokeId = new ArrayList<>();
 		_strokeLength = new ArrayList<>();
 		_strokeArc = new ArrayList<>();
+		_strokeArcPoint = new ArrayList<>();
 		_strokeArcString = new ArrayList<>();
 		_strokeIdToIndexHash = new HashMap<>();
 		try{
@@ -83,6 +85,7 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 				_strokeId.add(rs.getInt("id"));
 				_strokeLength.add(rs.getDouble("length"));
 				_strokeArc.add(GeometryParsePostgres.getLineStringMultiLine((PGgeometry)rs.getObject("flatted_arc_series")));
+				_strokeArcPoint.add(GeometryParsePostgres.getLineStringMultiLine2((PGgeometry)rs.getObject("flatted_arc_series")));
 				_strokeArcString.add(rs.getString("strokeString"));
 				_strokeIdToIndexHash.put(rs.getInt("id"), _strokeId.size()-1);
 			}

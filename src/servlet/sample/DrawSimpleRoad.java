@@ -133,7 +133,6 @@ public class DrawSimpleRoad {
 		_graphics2d.setStroke(wideStroke);
 		_graphics2d.setPaint(Color.black);
 		_graphics2d.draw(ellipse);	// 輪郭の描画.
-
 	}
 	
 

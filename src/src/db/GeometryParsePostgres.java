@@ -45,6 +45,39 @@ public class GeometryParsePostgres {
 		return polygonString;
 	}
 	/**
+	 * ArrayList<Point2d>からst_lineFromTextに変換する
+	 * @param aMultiLine
+	 * @return
+	 */
+	static public String linePointString(ArrayList<Point2D> aMultiLine, int SRID){
+		// MultiLineString((),())の作成.
+		String multiLineStiring = "'LineString(";
+		for(int i=0; i<aMultiLine.size(); i++){
+			multiLineStiring +=""+aMultiLine.get(i).getX()+" "+aMultiLine.get(i).getY()+",";
+		}
+		multiLineStiring = multiLineStiring.substring(0, multiLineStiring.length()-1);
+		multiLineStiring +=")'";
+		
+		String lineFromText = "st_geomFromText("+multiLineStiring+", "+SRID+")";
+		return lineFromText;
+	}
+	/**
+	 * ArrayListからWKT形式のPolygonを返す
+	 * @param anode
+	 * @return
+	 */
+	public static String polygonString(ArrayList<Point2D> aMultiNode, int SRID){
+		String polygonWKT = "'Polygon((";
+		
+		for(int i=0; i<aMultiNode.size(); i++){
+			polygonWKT += ""+aMultiNode.get(i).getX() + " " + aMultiNode.get(i).getY() + ",";
+		}
+		polygonWKT = polygonWKT.substring(0, polygonWKT.length()-1);
+		polygonWKT +="))'";
+		polygonWKT = "st_polygonFromText("+polygonWKT+", "+SRID+")";
+		return polygonWKT;
+	}
+	/**
 	 * PGgeometryからpoint2Dに変換
 	 * @param geom
 	 * @return
@@ -60,7 +93,8 @@ public class GeometryParsePostgres {
 	}
 	/**
 	 * PGeometry(LineStringの複数ポイント)オブジェクトをLine2Dに変換
-	 * deprecated getLineStringMultiLine2()を使うこと
+	 * @deprecated getLineStringMultiLine2()を使うこと
+	 * @see GeometryParsePostgres#getLineStringMultiLine2()
 	 */
 	public static ArrayList<Line2D> getLineStringMultiLine(PGgeometry aGeom){
 		ArrayList<Line2D> lineStringMultiLine = new ArrayList<>();
@@ -88,6 +122,39 @@ public class GeometryParsePostgres {
 			}
 		}
 		return lineStringMultiPoint;
+	}
+	/**
+	 * PGeometry(MultiLineString)オブジェクトをPoint2dに変換(arcで取得)
+	 */
+	public static ArrayList<ArrayList<Point2D>> getMulitLimeStringDatas2(PGgeometry aGeom){
+		ArrayList<ArrayList<Point2D>> multiLineString = new ArrayList<>();
+		if(aGeom.getGeoType() == Geometry.MULTILINESTRING){
+			MultiLineString mLineString = (MultiLineString)aGeom.getGeometry(); 
+			for( int r = 0; r < mLineString.numLines(); r++) {
+				LineString lineString = mLineString.getLine(r);
+				ArrayList<Point2D> tmpLineString = new ArrayList<>();
+				for(int j=0; j<lineString.numPoints(); j++){
+					tmpLineString.add(
+							(Point2D)new Point2D.Double(
+									lineString.getPoint(j).x, 
+									lineString.getPoint(j).y)
+							);
+				}
+				multiLineString.add(tmpLineString);
+			} 
+		}else if(aGeom.getGeoType() == Geometry.LINESTRING){
+			LineString lineString = (LineString)aGeom.getGeometry(); 
+			ArrayList<Point2D> tmpLineString = new ArrayList<>();
+			for(int i=0; i<lineString.numPoints(); i++){
+				tmpLineString.add(new Point2D.Double(
+						lineString.getPoint(i).getX(), lineString.getPoint(i).getY()));
+			}
+			multiLineString.add(tmpLineString);
+		}else{
+			System.out.println("MultilineString か lineStringでありません");
+			return null;
+		}
+		return multiLineString;
 	}
 	/**
 	 * PGeometry(MultiLineString)オブジェクトをLine2Dに変換(端点のみ)(linkで取得)
@@ -144,23 +211,6 @@ public class GeometryParsePostgres {
 			System.out.println("MultilineString か lineStringでありません");
 		}
 		return multiLineString;
-	}
-	
-	/**
-	 * ArrayListからWKT形式のPolygonを返す
-	 * @param anode
-	 * @return
-	 */
-	public static String polygonString(ArrayList<Point2D> aMultiNode, int SRID){
-		String polygonWKT = "'Polygon((";
-		
-		for(int i=0; i<aMultiNode.size(); i++){
-			polygonWKT += ""+aMultiNode.get(i).getX() + " " + aMultiNode.get(i).getY() + ",";
-		}
-		polygonWKT = polygonWKT.substring(0, polygonWKT.length()-1);
-		polygonWKT +="))'";
-		polygonWKT = "st_polygonFromText("+polygonWKT+", "+SRID+")";
-		return polygonWKT;
 	}
 	
 	/**
