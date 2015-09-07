@@ -11,12 +11,14 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import servlet.ErrorMsg;
+import src.QuickSort2;
 import src.coordinate.ConvertLngLatXyCoordinate;
 import src.coordinate.GetLngLatOsm;
 import src.db.GeneralPurposeGeometry;
@@ -32,9 +34,9 @@ public class DrawSimplifiedStroke {
 	/** 地図の大きさ */
 	public Point windowSize = new Point(700, 700);
 	/** 初期の緯度経度Point2D形式 */
-	private  Point2D centerLngLat = new Point2D.Double(136.9309671669116, 35.15478942665804);// 鶴舞公園.
+	private  Point2D centerLngLat;// = new Point2D.Double(136.9309671669116, 35.15478942665804);// 鶴舞公園.
 	/** スケール. */
-	private int scale = 15;
+	private int scale;// = 15;
 	/** 閾値 */
 	private  double threshold = 50;
 	
@@ -52,8 +54,10 @@ public class DrawSimplifiedStroke {
 	 */
 	public DrawSimplifiedStroke(HttpServletRequest request, HttpServletResponse response){
 		// 必須パラメータがあるか.
-		if(request.getParameter("centerLngLat")==null
-				){
+		if(
+				request.getParameter("scale")==null||
+				request.getParameter("centerLngLat")==null
+			){
 			ErrorMsg.errorResponse(request, response, "必要なパラメータがありません");
 			return;
 		}
@@ -109,13 +113,8 @@ public class DrawSimplifiedStroke {
 			ArrayList<Point> simplifiedStroke = simplifyStroke(_convert.convertLngLatToXyCoordinate(aPathList.get(i)));
 			drawPath(simplifiedStroke, 1, Color.pink);
 			drawPoint(simplifiedStroke, 6, new Color(240,128,128,128));
-//			System.exit(0);
 		}
 		
-//		for(int i=0; i<aPathList.size(); i++){
-//			drawPath(_convert.convertLngLatToXyCoordinate(aPathList.get(i)), 1, Color.pink);
-//			drawPoint(_convert.convertLngLatToXyCoordinate(aPathList.get(i)), 6, new Color(240,128,128,128));
-//		}
 	}
 	/**
 	 * simplificationをする
@@ -124,15 +123,29 @@ public class DrawSimplifiedStroke {
 	 */
 	public ArrayList<Point> simplifyStroke(ArrayList<Point> aPath){
 		ArrayList<Point> pathList = new ArrayList<>(aPath);	// ディープコピー必要？.
+		ArrayList<Integer> pathIndex = new ArrayList<>();	// pathのインデックス.
+		ArrayList<Double> eachPathValue = new ArrayList<>();	// 各頂点における評価値.
+//		int inWindowPointNum = 0; // 画面内にある点の数.
 		int removeNum = 0;	// 消した数.
 		int renzokuRemoveNum = 0;	// 連続で消した数.
-		GeneralPurposeGeometry generalPurposeGeometry = new GeneralPurposeGeometry();
-		generalPurposeGeometry.startConnection();
-
-		for(int i=1; i<pathList.size()-1; i++){
-			if(		pathList.get(i).getX() < 0 || windowSize.getX() < pathList.get(i).getX()||
-					pathList.get(i).getY() < 0 || windowSize.getY() < pathList.get(i).getY()
-				){// 画面外にあれば何もしない.
+//		GeneralPurposeGeometry generalPurposeGeometry = new GeneralPurposeGeometry();
+//		generalPurposeGeometry.startConnection();
+		
+		for(int i=0; i<aPath.size(); i++){
+			pathIndex.add(i);
+		}
+		
+		
+		for(int i=0; i<pathList.size(); i++){
+//			if(		pathList.get(i).getX() < 0 || windowSize.getX() < pathList.get(i).getX()||
+//					pathList.get(i).getY() < 0 || windowSize.getY() < pathList.get(i).getY()
+//				){// 画面外にあれば何もしない.
+//				eachPathValue.add(Double.MAX_VALUE);
+//				continue;
+//			}
+			if(i==0 || i==pathList.size()-1){	// 最初と最後も何もしない.
+				eachPathValue.add(Double.MAX_VALUE);
+//				inWindowPointNum++;
 				continue;
 			}
 			/////////////////////////////////////
@@ -152,57 +165,81 @@ public class DrawSimplifiedStroke {
 //				double thetaRadian = Math.acos((va.getX()*vb.getX()+va.getY()*vb.getY())/(Math.hypot(va.getX(), va.getY())*Math.hypot(vb.getX(), vb.getY())));
 //				double L2ErrorNorm = 1.0/2.0*Math.hypot(va.getX(), va.getY())*Math.hypot(vb.getX(), vb.getY())*Math.sin(thetaRadian);
 				/////////////////////////////////////
-				/////////////////////////////////////
 				
-				///////////////////////////////////////////////////////////
-				// もともとあるline(original curve)と間引いたときのline(removedcurve)で囲まれた面積を求める.(パターン2)
-				// original curve : aPath.get(i+removeNum-renzokuRemoveNum-1)~aPath.get(i+removeNum+1).
-				// removed curve  : pathList.get(i-1)~pathList.get(i+1)
-				/////////////////////////////////////////////////////////////
-				ArrayList<Point2D> originalCurve = new ArrayList<>();	// もともとあるline.
-				ArrayList<Point2D> removedCurve = new ArrayList<>();	// 間引いたときのline.
-				for(int k=i+removeNum-renzokuRemoveNum-1; k<=i+removeNum+1; k++){
-					originalCurve.add(aPath.get(k));
-				}
-				removedCurve.add(pathList.get(i-1));
-				removedCurve.add(pathList.get(i+1));
-				// originalCurvをremovedCurveで切った時の結果
-				ArrayList<ArrayList<Point2D>> splittedLine  = generalPurposeGeometry.splitLine(originalCurve, removedCurve);
-				double L2ErrorNorm=0;
-				if(splittedLine==null){	// 2つのlineが重なっていた.
-					L2ErrorNorm = 0;
-				}else{
-					for(int k=0;k<splittedLine.size(); k++){
-						splittedLine.get(k).add(new Point2D.Double(splittedLine.get(k).get(0).getX(), splittedLine.get(k).get(0).getY())); // 多角形になるようにする.
-						L2ErrorNorm += calcPolygonArea(splittedLine.get(k)); //polygonの面積を計算.
-					}
-				}
-				//////////////////////////////////////////////
+			///////////////////////////////////////////////////////////
+			// もともとあるline(original curve)と間引いたときのline(removedcurve)で囲まれた面積を求める.(パターン2)
+			// original curve : aPath.get(i+removeNum-renzokuRemoveNum-1)~aPath.get(i+removeNum+1).
+			// removed curve  : pathList.get(i-1)~pathList.get(i+1)
+			/////////////////////////////////////////////////////////////
+//				ArrayList<Point2D> originalCurve = new ArrayList<>();	// もともとあるline.
+//				ArrayList<Point2D> removedCurve = new ArrayList<>();	// 間引いたときのline.
+//				for(int k=i+removeNum-renzokuRemoveNum-1; k<=i+removeNum+1; k++){
+//					originalCurve.add(aPath.get(k));
+//				}
+//				removedCurve.add(pathList.get(i-1));
+//				removedCurve.add(pathList.get(i+1));
+//				// originalCurvをremovedCurveで切った時の結果
+//				ArrayList<ArrayList<Point2D>> splittedLine  = generalPurposeGeometry.splitLine(originalCurve, removedCurve);
+//				double L2ErrorNorm=0;
+//				if(splittedLine==null){	// 2つのlineが重なっていた.
+//					L2ErrorNorm = 0;
+//				}else{
+//					for(int k=0;k<splittedLine.size(); k++){
+//						splittedLine.get(k).add(new Point2D.Double(splittedLine.get(k).get(0).getX(), splittedLine.get(k).get(0).getY())); // 多角形になるようにする.
+//						L2ErrorNorm += calcPolygonArea(splittedLine.get(k)); //polygonの面積を計算.
+//					}
+//				}
 				//////////////////////////////////////////////
 				
-//				System.out.println("############");
-//				System.out.println(aPath.get(i+removeNum-renzokuRemoveNum-1) + "  " + aPath.get(i+removeNum+1));
-//				System.out.println(pathList.get(i-1) + "  " + pathList.get(i+1));
-//				System.out.println("############");
-//				
-				
-				System.out.println("l2errorNorm : " + L2ErrorNorm);
-				if(L2ErrorNorm < threshold || Double.isNaN(L2ErrorNorm)){ // 閾値より小さかったら中間点を削除する.
-					System.out.println("remove");
-					pathList.remove(i);
-					i--;
-					removeNum++;
-					renzokuRemoveNum++;
-				}else{
-					renzokuRemoveNum = 0;
-				}
+//				System.out.println("l2errorNorm : " + L2ErrorNorm);
+//				if(L2ErrorNorm < threshold || Double.isNaN(L2ErrorNorm)){ // 閾値より小さかったら中間点を削除する.
+//					System.out.println("remove");
+//					pathList.remove(i);
+//					i--;
+//					removeNum++;
+//					renzokuRemoveNum++;
+//				}else{
+//					renzokuRemoveNum = 0;
+//				}
+			
+			/////////////////////////////////////////////////////////
+			// p_n-1, p_n, p_n+1の面積を求める.
+			/////////////////////////////////////////////////////////
+			double area = calcPolygonArea(new ArrayList<>(Arrays.asList(
+					(Point2D)new Point2D.Double(aPath.get(i-1).getX(), aPath.get(i-1).getY()),
+					(Point2D)new Point2D.Double(aPath.get(i).getX(), aPath.get(i).getY()), 
+					(Point2D)new Point2D.Double(aPath.get(i+1).getX(), aPath.get(i+1).getY()),
+					(Point2D)new Point2D.Double(aPath.get(i-1).getX(), aPath.get(i-1).getY()))));
+			eachPathValue.add(area);
+//			inWindowPointNum++;
 		}
-		generalPurposeGeometry.endConnection();
+		QuickSort2<Double, Integer> quickSort2 = new QuickSort2<>(eachPathValue, pathIndex, false);
+		pathIndex = quickSort2.getArrayList2();
+//		// 評価値の低いものからn個選択.
+		for(int i=0; i<pathList.size()*((100-threshold)/100.0); i++){	// 画面上のnバーセントのノードを表価値の低いノードから削除.
+			if(eachPathValue.get(pathIndex.get(i)) == Double.MAX_VALUE){	// 端点は絶対残す.
+				break;
+			}
+			pathList.set(pathIndex.get(i), null);	// nullをセット.
+//			eachPathValue.set(pathIndex.get(i), null);
+		}
+		
+		removeNum = 0;
+		for(int i=0; i<pathList.size(); i++){	// nullをセットしたノードを削除.
+			if(pathList.get(i) == null){
+				pathList.remove(i);
+				i--;
+				removeNum++;
+			}
+		}
+		////////////////////////////////////////////////////////
+//		generalPurposeGeometry.endConnection();
 		return pathList;
 	}
 	
 	/**
 	 * 多角形の面積を求める
+	 * @param (p.get(0) とp.get(p.size())はおなじでないといけない)
 	 */
 	private double calcPolygonArea(ArrayList<Point2D> p){
 		double menseki = 1.0/2.0;

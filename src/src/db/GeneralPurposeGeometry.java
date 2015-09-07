@@ -28,6 +28,7 @@ public class GeneralPurposeGeometry extends HandleDbTemplateSuper{
 	
 	/**
 	 * lineを切る
+	 * st_difference()   st_split()を使ってもいい?
 	 * @param aSplitedLine
 	 * @param aBlade
 	 */

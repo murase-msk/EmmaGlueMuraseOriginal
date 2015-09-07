@@ -38,6 +38,9 @@ public class DrawElasticStroke {
 	/** glue外側の半径(pixel) */
 	private int glueOuterRadius=300;
 	
+	/** 描画するストロークの数 */
+	private static final int STROKE_NUM = 30;
+	
 	/** 道路の種類(car, bikeFoot) */
 	public String roadType = "car";
 	
@@ -176,7 +179,7 @@ public class DrawElasticStroke {
 				LngLatMercatorUtility.ConvertLngLatToMercator(centerLngLat));
 		
 		//for(ArrayList<Line2D> arrArc : __arc){
-		for(int i=0; i<100; i++){	// 上位30本だけ.
+		for(int i=0; i<STROKE_NUM; i++){	// 上位30本だけ.
 			for(Line2D arc : __arc.get(i)){
 				// 2点の緯度経度から中心までの距離(メートル)を求める.
 				double p1Meter = LngLatMercatorUtility.calcDistanceFromLngLat(centerLngLat, arc.getP1());
