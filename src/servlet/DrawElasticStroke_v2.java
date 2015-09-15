@@ -23,19 +23,19 @@ import src.coordinate.GetLngLatOsm;
 import src.coordinate.LngLatMercatorUtility;
 import src.db.getData.OsmLineDataGeom;
 import src.db.getData.OsmRoadDataGeom;
+import src.db.getData.OsmStrokeDataGeom;
 
 /**
- * 伸縮する道路を描画
- * http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticRoad&centerLngLat=136.9309671669116,35.15478942665804&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300&roadType=car
+ * 色を付け他ストロークを使う
  * @author murase
  *
  */
-public class DrawElasticRoad {
+public class DrawElasticStroke_v2 {
 	
 	/** 地図の大きさ */
 	public Point windowSize = new Point(700, 700);
 	/** 初期の緯度経度Point2D形式 */
-	private  Point2D.Double centerLngLat = new Point2D.Double(136.9309671669116, 35.15478942665804);// 鶴舞公園.
+	private  Point2D centerLngLat = new Point2D.Double(136.9309671669116, 35.15478942665804);// 鶴舞公園.
 	/** focusのスケール */
 	private int focusScale = 17;
 	/** contextのスケール */
@@ -45,32 +45,33 @@ public class DrawElasticRoad {
 	/** glue外側の半径(pixel) */
 	private int glueOuterRadius=300;
 	
+	/** 描画するストロークの数 */
+	private static final int STROKE_NUM = 30;
+	
 	/** 道路の種類(car, bikeFoot) */
 	public String roadType = "car";
 	
-	// 中心点からglue内側の長さ.
+	/** 中心点からglue内側の長さ(メートル) */
 	public double glueInnerRadiusMeter;
-	// 中心点からglue外側の長さ.
+	/** 中心点からglue外側の長さ(メートル)  */
 	public double glueOuterRadiusMeter;
 	
-	
+	/** 描画用 */
 	Graphics2D _graphics2d;
-	/** focus */
+	/** focusの端点の緯度経度を求める */
 	public GetLngLatOsm _getLngLatOsmFocus;
 	/** focus領域の緯度経度xy変換 */
 	public ConvertLngLatXyCoordinate _convertFocus;
-	/** context */
+	/** contextの端点の緯度経度を求める */
 	public GetLngLatOsm _getLngLatOsmContext;
 	/** context領域の緯度経度xy変換 */
 	public ConvertLngLatXyCoordinate _convertContext;
 	/** メルカトル座標系xy変換 */
 	public ConvertMercatorXyCoordinate _contextMercatorConvert;
-//	public Point2D _upperLeftLngLat;
-//	public Point2D _lowerRightLngLat;
+
 	
-	
-	//http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticRoad&centerLngLat=136.9309671669116,35.15478942665804&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300
-	public DrawElasticRoad(HttpServletRequest request, HttpServletResponse response) {
+	public DrawElasticStroke_v2(HttpServletRequest request, HttpServletResponse response) {
+		
 		// 必須パラメータがあるか.
 		if(request.getParameter("centerLngLat")==null ||
 				request.getParameter("focus_zoom_level")==null ||
@@ -98,9 +99,8 @@ public class DrawElasticRoad {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-
+		
 	}
-	
 	
 	/**
 	 * 道路データの取得しbufferedimageの作成
@@ -131,19 +131,37 @@ public class DrawElasticRoad {
 				LngLatMercatorUtility.ConvertLngLatToMercator((Point2D.Double)_getLngLatOsmContext._lowerRightLngLat), windowSize);
 		
 		
-		// 道路データの取得.
 		ArrayList<ArrayList<Point2D>> roadPath = new ArrayList<>();
 		ArrayList<Integer> clazzList = new ArrayList<>();
+
+		//////////////////////////////////////////////
+		// ストローク取得.
+		OsmStrokeDataGeom osmStrokeDataGeom = new OsmStrokeDataGeom();
+		osmStrokeDataGeom.startConnection();
+		Point upperLeftOuterGlueXY = new Point(windowSize.x/2-glueOuterRadius, windowSize.x/2-glueOuterRadius);
+		Point LowerRightOuterGlueXY = new Point(windowSize.x/2-glueOuterRadius + glueOuterRadius*2, windowSize.x/2-glueOuterRadius + glueOuterRadius*2);
+		osmStrokeDataGeom.insertStrokeData(_convertContext.convertXyCoordinateToLngLat(upperLeftOuterGlueXY), _convertContext.convertXyCoordinateToLngLat(LowerRightOuterGlueXY));
+		osmStrokeDataGeom.endConnection();
+		// 上位30本だけ取得.
+//		ArrayList<ArrayList<Point2D>> topN_strokes = new ArrayList<>();
+//		ArrayList<Integer> topN_strokeClazz = new ArrayList<>();
+//		for(int i=0; i<30; i++){
+//			topN_strokes.add(osmStrokeDataGeom._strokeArcPoint.get(i));
+//			topN_strokeClazz.add(osmStrokeDataGeom._strokeClazz.get(i));
+//		}
+		
+		
+		roadPath.addAll(osmStrokeDataGeom._strokeArcPoint);
+		clazzList.addAll(osmStrokeDataGeom._strokeClazz);
+		
 		OsmRoadDataGeom osmRoadDataGeom = new OsmRoadDataGeom();
 		osmRoadDataGeom.startConnection();
 		//////////////////////////////////
-		// 道路データを取得する.///////////////
+		// 高速道路を取得.///////////////
 		//////////////////////////////////
-		osmRoadDataGeom.insertOsmRoadData(_getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat, roadType, "");
-		// 道路の描画.
+		osmRoadDataGeom.insertOsmRoadData(_getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat, roadType, " clazz <=12");
 		roadPath.addAll(osmRoadDataGeom._arc2);
 		clazzList.addAll(osmRoadDataGeom._clazz);
-//		paintElasticRoadData(osmRoadDataGeom._arc2, osmRoadDataGeom._clazz);
 		//////////////////////////////////
 		// 鉄道データの取得.//////////////////
 		//////////////////////////////////
@@ -161,10 +179,23 @@ public class DrawElasticRoad {
 		osmLineDataGeom.endConnection();
 		roadPath.addAll(osmLineDataGeom._arc);
 		clazzList.addAll(osmLineDataGeom._clazz);
-//		paintElasticRoadData(osmLineDataGeom._arc, osmLineDataGeom._clazz);
 
-		// 最後に描画.
+		
+		// glue部分だけ描画
 		paintElasticRoadData(roadPath, clazzList);
+		//////////////////////////////////////////////
+		
+		//////////////////////////////////////////////
+//		// 道路データの取得.
+//		OsmRoadDataGeom osmRoadDataGeom = new OsmRoadDataGeom();
+//		osmRoadDataGeom.startConnection();
+//		// 矩形範囲内の道路データを取得する.
+//		osmRoadDataGeom.insertOsmRoadData(_getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat, roadType);
+//		osmRoadDataGeom.__arc = osmRoadDataGeom._arc;
+//		osmRoadDataGeom.endConnection();
+//		// // focus, contextの道路の描画.
+//		paintRoadData(osmRoadDataGeom.__arc);
+		//////////////////////////////////////////////
 		
 		BasicStroke wideStroke = new BasicStroke(3);
 		_graphics2d.setStroke(wideStroke);
@@ -179,8 +210,8 @@ public class DrawElasticRoad {
 		
 		return bfImage;
 	}
-	
-	
+
+
 	/////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////
 	///////////////////道路描画について//////////////////////////////////////
@@ -386,4 +417,6 @@ public class DrawElasticRoad {
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
+
+	
 }

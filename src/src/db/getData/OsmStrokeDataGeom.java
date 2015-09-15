@@ -21,7 +21,7 @@ import com.sun.org.apache.bcel.internal.generic.NEW;
 public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 	
 	private static final String DBNAME = "osm_road_db";	// Database Name
-	private static final String SCHEMA = "stroke";
+	private static final String SCHEMA = "stroke_v4";
 	private static final String TBNAME = "stroke_table";
 	private static final String TBNAME2 = "flatted_stroke_table";
 	private static final String USER = "postgres";			// user name for DB.
@@ -47,7 +47,8 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 	public ArrayList<Double> _strokeLength = new ArrayList<>();
 	/** ストロークIDからインデックスを求めるハッシュ */
 	public HashMap<Integer, Integer> _strokeIdToIndexHash = new HashMap<>();
-	
+	/**  */
+	public ArrayList<Integer> _strokeClazz = new ArrayList<>();
 	
 	/**
 	 * 範囲内のストロークを取り出す
@@ -59,10 +60,11 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 		_strokeArcPoint = new ArrayList<>();
 		_strokeArcString = new ArrayList<>();
 		_strokeIdToIndexHash = new HashMap<>();
+		_strokeClazz = new ArrayList<>();
 		try{
 			String statement;
 			statement = "select "+
-					" id, length,"+
+					" id, length, stroke_clazz, "+
 					" flatted_arc_series, " +
 					" st_asText(flatted_arc_series) as strokeString" +
 					" from "+SCHEMA+"."+TBNAME2+" " +
@@ -78,7 +80,7 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 								aUpperLeftLngLat.getX()+" "+aUpperLeftLngLat.getY()+
 								"))'," +
 							""+HandleDbTemplateSuper.WGS84_EPSG_CODE+")" +
-						") order by length desc;";
+						") order by length desc limit 30;";
 			System.out.println(statement);
 			ResultSet rs = execute(statement);
 			while(rs.next()){
@@ -88,6 +90,7 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 				_strokeArcPoint.add(GeometryParsePostgres.getLineStringMultiLine2((PGgeometry)rs.getObject("flatted_arc_series")));
 				_strokeArcString.add(rs.getString("strokeString"));
 				_strokeIdToIndexHash.put(rs.getInt("id"), _strokeId.size()-1);
+				_strokeClazz.add(rs.getInt("stroke_clazz"));
 			}
 			rs.close();
 		}catch(Exception e){

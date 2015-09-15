@@ -80,7 +80,7 @@ public class DrawSimpleRoad {
 		// 道路データの取得.
 		OsmRoadDataGeom osmRoadDataGeom = new OsmRoadDataGeom();
 		osmRoadDataGeom.startConnection();
-		osmRoadDataGeom.insertOsmRoadData(_upperLeftLngLat, _lowerRightLngLat,"car");
+		osmRoadDataGeom.insertOsmRoadData(_upperLeftLngLat, _lowerRightLngLat,"car", "");
 		osmRoadDataGeom.endConnection();
 		
 		// 道路の描画.

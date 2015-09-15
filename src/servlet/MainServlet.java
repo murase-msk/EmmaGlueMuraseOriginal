@@ -46,7 +46,7 @@ public class MainServlet extends HttpServlet{
 		type = request.getParameter("type");
 		switch(type){
 		case "DrawElasticStroke":
-			new DrawElasticStroke(request, response);
+			new DrawElasticStroke_v2(request, response);
 			break;
 		case "DrawElasticRoad":
 			new DrawElasticRoad(request, response);

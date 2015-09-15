@@ -68,7 +68,7 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 	/**
 	 * 矩形範囲のデータを取り出す
 	 */
-	public void insertOsmRoadData(Point2D aUpperLeftLngLat, Point2D aLowerRightLngLat, String aRoadType){
+	public void insertOsmRoadData(Point2D aUpperLeftLngLat, Point2D aLowerRightLngLat, String aRoadType, String aConstraint){
 		_linkId = new ArrayList<>();
 		_link = new ArrayList<>();
 		_sourceId = new ArrayList<>();
@@ -80,6 +80,7 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 		_arc2 = new ArrayList<>();
 		String table = (aRoadType.equals("bikeFoot") ? "osm_japan_bike_foot_2po_4pgr" : "osm_japan_car_2po_4pgr");
 		table = aRoadType.equals("rail") ? "osm_japan_rail_2po_4pgr": table;
+		String constraint = aConstraint.equals("")? "": " and " + aConstraint;
 		try{
 			String statement;
 			// SRID=4326.
@@ -97,7 +98,7 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 								aUpperLeftLngLat.getX()+" "+aLowerRightLngLat.getY()+
 							"))',"+WGS84_EPSG_CODE+
 						"), "+
-					"geom_way) " +
+					"geom_way) " +constraint+
 					"";
 			System.out.println(statement);
 			ResultSet rs = execute(statement);
