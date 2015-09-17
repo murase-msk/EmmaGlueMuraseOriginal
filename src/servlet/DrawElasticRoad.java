@@ -111,6 +111,7 @@ public class DrawElasticRoad {
 		bfImage=new BufferedImage( windowSize.x, windowSize.y, BufferedImage.TYPE_INT_ARGB);
 		_graphics2d = (Graphics2D) bfImage.getGraphics();
 		_graphics2d.setBackground(new Color(241,238,232));	// 背景指定.
+		//_graphics2d.setBackground(new Color(172,208,158));	// 背景指定(モリコロパーク用).
 		_graphics2d.clearRect(0, 0, windowSize.x, windowSize.y);
 		// アンチエイリアス設定：遅いときは次の行をコメントアウトする.
 		_graphics2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -310,7 +311,7 @@ public class DrawElasticRoad {
 				brownDashPath.add(path);
 				break;
 			case 72://(path).
-				whitePath.add(path);
+				redDashPath.add(path);
 				break;
 			case 81://青点線＋白線(cycleway)
 				blueDashPath.add(path);
@@ -388,8 +389,8 @@ public class DrawElasticRoad {
 			paintPath(line, 3, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(237,237,237));// 中の線.
 		}
 		for(ArrayList<Point2D> line: grayPath){
-			paintPath(line, 4, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(255,255,255));// 枠.
-			paintPath(line, 3, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(204,204,204));// 中の線.
+			paintPath(line, 8, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(189,189,188));// 枠.
+			paintPath(line, 7, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(204,204,204));// 中の線.
 		}
 		for(ArrayList<Point2D> line: narrowWhitePath){
 			paintPath(line, 4, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(189,189,188));// 枠.

@@ -78,7 +78,7 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 		_clazz = new ArrayList<>();
 		_arc = new ArrayList<>();
 		_arc2 = new ArrayList<>();
-		String table = (aRoadType.equals("bikeFoot") ? "osm_japan_bike_foot_2po_4pgr" : "osm_japan_car_2po_4pgr");
+		String table = (aRoadType.equals("all") ? "osm_japan_car_bike_foot_2po_4pgr" : "osm_japan_car_2po_4pgr");
 		table = aRoadType.equals("rail") ? "osm_japan_rail_2po_4pgr": table;
 		String constraint = aConstraint.equals("")? "": " and " + aConstraint;
 		try{
