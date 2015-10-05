@@ -80,7 +80,7 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 								aUpperLeftLngLat.getX()+" "+aUpperLeftLngLat.getY()+
 								"))'," +
 							""+HandleDbTemplateSuper.WGS84_EPSG_CODE+")" +
-						") order by length desc limit 30;";
+						") order by length desc limit 50;";
 			System.out.println(statement);
 			ResultSet rs = execute(statement);
 			while(rs.next()){
