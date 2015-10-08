@@ -21,7 +21,7 @@ import com.sun.org.apache.bcel.internal.generic.NEW;
 public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 	
 	private static final String DBNAME = "osm_road_db";	// Database Name
-	private static final String SCHEMA = "stroke_v2";
+	private static final String SCHEMA = "stroke_v3";
 	private static final String TBNAME = "stroke_table";
 	private static final String TBNAME2 = "flatted_stroke_table";
 	private static final String USER = "postgres";			// user name for DB.
@@ -51,7 +51,9 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 	public ArrayList<Integer> _strokeClazz = new ArrayList<>();
 	
 	/**
-	 * 範囲内のストロークを取り出す
+	 * 範囲内のストロークを取り出す(矩形範囲)
+	 * @param aUpperLeftLngLat
+	 * @param aLowerRightLngLat
 	 */
 	public void insertStrokeData(Point2D aUpperLeftLngLat, Point2D aLowerRightLngLat){
 		_strokeId = new ArrayList<>();
@@ -80,7 +82,7 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 								aUpperLeftLngLat.getX()+" "+aUpperLeftLngLat.getY()+
 								"))'," +
 							""+HandleDbTemplateSuper.WGS84_EPSG_CODE+")" +
-						") order by length desc limit 50;";
+						") order by length desc;";
 			System.out.println(statement);
 			ResultSet rs = execute(statement);
 			while(rs.next()){
@@ -98,6 +100,57 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 		}
 	}
 	
+	/**
+	 * 範囲内のストロークを取り出す(円範囲)
+	 * @param aCenterLngLat
+	 * @param aRadiusMeter
+	 */
+	public void insertStrokeDataInCircle(Point2D aCenterLngLat, double aRadiusMeter){
+		_strokeId = new ArrayList<>();
+		_strokeLength = new ArrayList<>();
+		_strokeArc = new ArrayList<>();
+		_strokeArcPoint = new ArrayList<>();
+		_strokeArcString = new ArrayList<>();
+		_strokeIdToIndexHash = new HashMap<>();
+		_strokeClazz = new ArrayList<>();
+		try{
+			String statement;
+			statement = "select "+
+					" id, length, stroke_clazz, "+
+					" flatted_arc_series, " +
+					" st_asText(flatted_arc_series) as strokeString" +
+					" from "+SCHEMA+"."+TBNAME2+" " +
+					" where" +
+					" st_intersects(" +
+						"flatted_arc_series, "+
+						"st_transform(" +
+							"st_buffer(" +
+								"st_transform(" +
+									"st_geomFromText(" +
+										"'point("+aCenterLngLat.getX()+" "+aCenterLngLat.getY()+")', "+HandleDbTemplateSuper.WGS84_EPSG_CODE+"" +
+									")," +
+									"" +HandleDbTemplateSuper.WGS84_UTM_EPGS_CODE+
+								")," +
+								""+aRadiusMeter+"" +
+							"),"+HandleDbTemplateSuper.WGS84_EPSG_CODE+"" +
+						")"+
+					") order by length desc;";
+			System.out.println(statement);
+			ResultSet rs = execute(statement);
+			while(rs.next()){
+				_strokeId.add(rs.getInt("id"));
+				_strokeLength.add(rs.getDouble("length"));
+				_strokeArc.add(GeometryParsePostgres.getLineStringMultiLine((PGgeometry)rs.getObject("flatted_arc_series")));
+				_strokeArcPoint.add(GeometryParsePostgres.getLineStringMultiLine2((PGgeometry)rs.getObject("flatted_arc_series")));
+				_strokeArcString.add(rs.getString("strokeString"));
+				_strokeIdToIndexHash.put(rs.getInt("id"), _strokeId.size()-1);
+				_strokeClazz.add(rs.getInt("stroke_clazz"));
+			}
+			rs.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 	
 	// 切り出さずにそのままのストローク.
 //	/** データベースからそのまま取り出したストローク(arc形式) */
@@ -218,6 +271,128 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 			}
 		_subStrokeLength = getCutOutStrokeLength(_subStrokeString);	// 長さを求める.
 	}
+	
+	/**
+	 * 指定した半径の円にかかるストロークを取り出す.
+	 * @param aUpperLeftLngLat
+	 * @param aLowerRightLngLat
+	 * @param radiusMeter 半径(メートル)
+	 */
+	public void calcStrokeOverlapedCircle(Point2D centerLngLat, double radiusMeter){
+		_strokeId = new ArrayList<>();
+		_strokeLength = new ArrayList<>();
+		_strokeArc = new ArrayList<>();
+		_strokeArcPoint = new ArrayList<>();
+		_strokeArcString = new ArrayList<>();
+		_strokeIdToIndexHash = new HashMap<>();
+		_strokeClazz = new ArrayList<>();
+		try{
+			String statement;
+			statement = 
+					"select "+
+						" id, length, stroke_clazz, "+
+						" flatted_arc_series, " +
+						" st_asText(flatted_arc_series) as strokeString" +
+					" from "+SCHEMA+"."+TBNAME2+" " +
+					" where " +
+						" st_crosses("+
+							"st_transform("+
+								" st_buffer(" +
+									"st_transform("+
+										"st_geomFromText(" +
+											"'Point("+(centerLngLat.getX())+" "+
+												(centerLngLat.getY())+")'" +
+											", "+HandleDbTemplateSuper.WGS84_EPSG_CODE+"" +
+										")," +
+										WGS84_UTM_EPGS_CODE +
+									")," +
+									radiusMeter+
+								"), " +
+							""+HandleDbTemplateSuper.WGS84_EPSG_CODE+")" +
+						",flatted_arc_series)";
+			System.out.println(statement);
+			ResultSet rs = execute(statement);
+			while(rs.next()){
+				_strokeId.add(rs.getInt("id"));
+				_strokeLength.add(rs.getDouble("length"));
+				_strokeArc.add(GeometryParsePostgres.getLineStringMultiLine((PGgeometry)rs.getObject("flatted_arc_series")));
+				_strokeArcPoint.add(GeometryParsePostgres.getLineStringMultiLine2((PGgeometry)rs.getObject("flatted_arc_series")));
+				_strokeArcString.add(rs.getString("strokeString"));
+				_strokeIdToIndexHash.put(rs.getInt("id"), _strokeId.size()-1);
+				_strokeClazz.add(rs.getInt("stroke_clazz"));
+			}
+			rs.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	
+	/**
+	 * 指定したストロークが指定した半径の円と交差するか
+	 */
+	public boolean checkIntersectStrokeAndCircle(Point2D centerLngLat, String aStrokeString, double radiusMeter){
+		try{
+			String statement;
+			statement = 
+					"select "+
+						" st_crosses("+
+							"st_transform("+
+								" st_buffer(" +
+									"st_transform("+
+										"st_geomFromText(" +
+											"'Point("+(centerLngLat.getX())+" "+
+												(centerLngLat.getY())+")'" +
+											", "+HandleDbTemplateSuper.WGS84_EPSG_CODE+"" +
+										")," +
+										WGS84_UTM_EPGS_CODE +
+									")," +
+									radiusMeter+
+								"), " +
+							""+HandleDbTemplateSuper.WGS84_EPSG_CODE+")" +
+							",st_geomFromText('"+aStrokeString+"', "+HandleDbTemplateSuper.WGS84_EPSG_CODE+")" +
+						")";
+			System.out.println(statement);
+			ResultSet rs = execute(statement);
+			while(rs.next()){
+				return rs.getBoolean(1);
+			}
+			rs.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * 2つのストロークが接するか
+	 */
+	public boolean checkIntersectTwoStroke(String aStrokeString1, String aStrokeString2){
+		try{
+			String statement;
+			statement = 
+					"select "+
+						" st_crosses("+
+							 "st_geomFromText('"+aStrokeString1+"', "+HandleDbTemplateSuper.WGS84_EPSG_CODE+")" +
+							",st_geomFromText('"+aStrokeString2+"', "+HandleDbTemplateSuper.WGS84_EPSG_CODE+")" +
+						")";
+			System.out.println(statement);
+			ResultSet rs = execute(statement);
+			while(rs.next()){
+				return rs.getBoolean(1);
+			}
+			rs.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		return false;
+	}
+	
+	//////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////
 	
 	/**
 	 * 上位ｎこのストロークを求める

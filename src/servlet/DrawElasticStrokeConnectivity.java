@@ -6,7 +6,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.geom.GeneralPath;
-import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.OutputStream;
@@ -26,12 +25,12 @@ import src.db.getData.OsmRoadDataGeom;
 import src.db.getData.OsmStrokeDataGeom;
 
 /**
- * 色を付け他ストロークを使う
+ * focusから伸びるストロークを選択し，描画する
  * @author murase
  *
+ * http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticStrokeConnectivity&centerLngLat=136.9324779510498,35.160402404742165&focus_zoom_level=16&context_zoom_level=14&glue_inner_radius=125&glue_outer_radius=200&roadType=car?1444108280199
  */
-public class DrawElasticStroke_v2 {
-	
+public class DrawElasticStrokeConnectivity {
 	/** 地図の大きさ */
 	public Point windowSize = new Point(700, 700);
 	/** 初期の緯度経度Point2D形式 */
@@ -70,8 +69,7 @@ public class DrawElasticStroke_v2 {
 	public ConvertMercatorXyCoordinate _contextMercatorConvert;
 
 	
-	public DrawElasticStroke_v2(HttpServletRequest request, HttpServletResponse response) {
-		
+	public DrawElasticStrokeConnectivity(HttpServletRequest request, HttpServletResponse response) {
 		// 必須パラメータがあるか.
 		if(request.getParameter("centerLngLat")==null ||
 				request.getParameter("focus_zoom_level")==null ||
@@ -99,7 +97,7 @@ public class DrawElasticStroke_v2 {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		
+
 	}
 	
 	/**
@@ -144,15 +142,12 @@ public class DrawElasticStroke_v2 {
 		// 右下の座標(xy座標((windowsize, windowsize)になるはず).
 		Point LowerRightOuterGlueXY = new Point(windowSize.x/2-glueOuterRadius + glueOuterRadius*2, windowSize.x/2-glueOuterRadius + glueOuterRadius*2);
 		// context(全体)にかかるストロークを取り出す.
-		osmStrokeDataGeom.insertStrokeData(_convertContext.convertXyCoordinateToLngLat(upperLeftOuterGlueXY), _convertContext.convertXyCoordinateToLngLat(LowerRightOuterGlueXY));
+//		osmStrokeDataGeom.insertStrokeData(_convertContext.convertXyCoordinateToLngLat(upperLeftOuterGlueXY), _convertContext.convertXyCoordinateToLngLat(LowerRightOuterGlueXY));
+		// focus-glueにかかるストロークだけを描画してみる.
+		osmStrokeDataGeom.calcStrokeOverlapedCircle(centerLngLat, glueInnerRadiusMeter);
+		
 		osmStrokeDataGeom.endConnection();
-		// 上位30本だけ取得.
-//		ArrayList<ArrayList<Point2D>> topN_strokes = new ArrayList<>();
-//		ArrayList<Integer> topN_strokeClazz = new ArrayList<>();
-//		for(int i=0; i<30; i++){
-//			topN_strokes.add(osmStrokeDataGeom._strokeArcPoint.get(i));
-//			topN_strokeClazz.add(osmStrokeDataGeom._strokeClazz.get(i));
-//		}
+		
 		
 		roadPath.addAll(osmStrokeDataGeom._strokeArcPoint);
 		clazzList.addAll(osmStrokeDataGeom._strokeClazz);
@@ -162,26 +157,24 @@ public class DrawElasticStroke_v2 {
 		//////////////////////////////////
 		// 高速道路を取得.///////////////
 		//////////////////////////////////
-		osmRoadDataGeom.insertOsmRoadData(_getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat, roadType, " clazz <=12");
-		roadPath.addAll(osmRoadDataGeom._arc2);
-		clazzList.addAll(osmRoadDataGeom._clazz);
+//		osmRoadDataGeom.insertOsmRoadData(_getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat, roadType, " clazz <=12");
+//		roadPath.addAll(osmRoadDataGeom._arc2);
+//		clazzList.addAll(osmRoadDataGeom._clazz);
 		//////////////////////////////////
 		// 鉄道データの取得.//////////////////
 		//////////////////////////////////
-		osmRoadDataGeom.insertOsmRoadData(_getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat, "rail", "");
-		// 鉄道の描画.
-		roadPath.addAll(osmRoadDataGeom._arc2);
-		clazzList.addAll(osmRoadDataGeom._clazz);
-//		paintElasticRoadData(osmRoadDataGeom._arc2, osmRoadDataGeom._clazz);
+//		osmRoadDataGeom.insertOsmRoadData(_getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat, "rail", "");
+//		roadPath.addAll(osmRoadDataGeom._arc2);
+//		clazzList.addAll(osmRoadDataGeom._clazz);
 		osmRoadDataGeom.endConnection();
 		
 		// 地下鉄の取得.
-		OsmLineDataGeom osmLineDataGeom = new OsmLineDataGeom();
-		osmLineDataGeom.startConnection();
-		osmLineDataGeom.insertLineDataSpecificColumn("railway", "subway", _getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat);
-		osmLineDataGeom.endConnection();
-		roadPath.addAll(osmLineDataGeom._arc);
-		clazzList.addAll(osmLineDataGeom._clazz);
+//		OsmLineDataGeom osmLineDataGeom = new OsmLineDataGeom();
+//		osmLineDataGeom.startConnection();
+//		osmLineDataGeom.insertLineDataSpecificColumn("railway", "subway", _getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat);
+//		osmLineDataGeom.endConnection();
+//		roadPath.addAll(osmLineDataGeom._arc);
+//		clazzList.addAll(osmLineDataGeom._clazz);
 
 		
 		// glue部分だけ描画

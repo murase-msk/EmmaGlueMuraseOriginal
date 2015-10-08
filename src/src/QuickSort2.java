@@ -52,7 +52,22 @@ public class QuickSort2<T extends Number,F extends Number>{
 			quickSortArray(0, _arrayList1.size()-1);
 		}
 	}
+	
+	/**
+	 * 1つの配列だけ
+	 * @param aArrayList
+	 * @param descFlg
+	 */
+	public QuickSort2 (ArrayList<T> aArrayList, boolean descFlg){
+		_arrayList1 = new ArrayList<>(aArrayList);
+		if(descFlg){
+			quickSortArrayReverse_(0, _arrayList1.size()-1);
+		}
+		else{
+			quickSortArray_(0, _arrayList1.size()-1);
+		}
 
+	}
 	
 	
     //基本挿入法（クイックソート）*********************************
@@ -148,6 +163,61 @@ public class QuickSort2<T extends Number,F extends Number>{
         }
     }
 
+
+    
+    
+    //基本挿入法（クイックソート）*********************************
+    //昇順ソート
+    private void quickSortArray_(int left, int right){
+        if (left <= right) {
+            T p = _arrayList1.get((left+right) / 2);
+            int l = left;
+            int r = right;
+            
+            while(l <= r) {
+                while(_arrayList1.get(l).doubleValue() < p.doubleValue()){ l++; }
+                while(_arrayList1.get(r).doubleValue() > p.doubleValue()){ r--; }
+                
+                if (l <= r) {
+                    T tmp = _arrayList1.get(l);
+                    _arrayList1.set(l, _arrayList1.get(r));
+                    _arrayList1.set(r, tmp);
+                    l++; 
+                    r--;
+                }
+            }
+    
+            quickSortArray_(left, r);
+            quickSortArray_(l, right);
+        }
+    }
+    
+    //基本挿入法（クイックソート）*********************************
+    //降順ソート.
+    private void quickSortArrayReverse_(int left, int right){
+        if (left <= right) {
+            T p = _arrayList1.get((left+right) / 2);
+            int l = left;
+            int r = right;
+            
+            while(l <= r) {
+                while(_arrayList1.get(l).doubleValue() > p.doubleValue()){ l++; }
+                while(_arrayList1.get(r).doubleValue() < p.doubleValue()){ r--; }
+                
+                if (l <= r) {
+                    T tmp = _arrayList1.get(l);
+                    _arrayList1.set(l, _arrayList1.get(r));
+                    _arrayList1.set(r, tmp);
+                    l++; 
+                    r--;
+                }
+            }
+    
+            quickSortArrayReverse_(left, r);
+            quickSortArrayReverse_(l, right);
+        }
+    }
+    
     
 
     //配列の値を出力するメソッド***********************************
