@@ -100,7 +100,7 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 						"), "+
 					"geom_way) " +constraint+
 					"";
-			System.out.println(statement);
+//			System.out.println(statement);
 			ResultSet rs = execute(statement);
 			while(rs.next()){
 				_linkId.add(rs.getInt("id"));

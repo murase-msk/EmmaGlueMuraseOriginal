@@ -168,9 +168,9 @@ public class DrawElasticStrokeConnectivity_v2 {
 //		osmStrokeDataGeom.calcStrokeOverlapedCircle(_convertContext.convertXyCoordinateToLngLat(upperLeftOuterGlueXY), _convertContext.convertXyCoordinateToLngLat(LowerRightOuterGlueXY), glueInnerRadiusMeter);
 		
 		osmStrokeDataGeom.endConnection();
-		for(ArrayList<Point2D> item: roadPath){
-			System.out.println(item.get(0));
-		}
+//		for(ArrayList<Point2D> item: roadPath){
+//			System.out.println(item.get(0));
+//		}
 		
 //		roadPath.addAll(osmStrokeDataGeom._strokeArcPoint);
 //		clazzList.addAll(osmStrokeDataGeom._strokeClazz);

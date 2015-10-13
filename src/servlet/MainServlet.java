@@ -36,7 +36,7 @@ public class MainServlet extends HttpServlet{
 		// パラメータの受け取り.
 		String type="";	// サーバのやること.
 		
-		System.out.println("postRequest");
+//		System.out.println("postRequest");
 		
 		if(request.getParameter("type")==null){
 			ErrorMsg.errorResponse(request, response, "typeパラメータがありません");

@@ -6,12 +6,11 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.postgis.Geometry;
 import org.postgis.PGgeometry;
 
 import src.db.GeometryParsePostgres;
 import src.db.HandleDbTemplateSuper;
-
-import com.sun.org.apache.bcel.internal.generic.NEW;
 
 /**
  * ストロークテーブルを使ったデータ処理
@@ -47,8 +46,13 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 	public ArrayList<Double> _strokeLength = new ArrayList<>();
 	/** ストロークIDからインデックスを求めるハッシュ */
 	public HashMap<Integer, Integer> _strokeIdToIndexHash = new HashMap<>();
-	/**  */
+	/** ストロークの道路クラス */
 	public ArrayList<Integer> _strokeClazz = new ArrayList<>();
+	/** ストロークのMBR(小さい方) */
+	public ArrayList<Point2D> _mbrMinXy = new ArrayList<>();
+	/** ストロークのMBR(大きい方) */
+	public ArrayList<Point2D> _mbrMaxXy = new ArrayList<>();
+	
 	
 	/**
 	 * 範囲内のストロークを取り出す(矩形範囲)
@@ -113,12 +117,16 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 		_strokeArcString = new ArrayList<>();
 		_strokeIdToIndexHash = new HashMap<>();
 		_strokeClazz = new ArrayList<>();
+		_mbrMinXy = new ArrayList<>();
+		_mbrMaxXy = new ArrayList<>();
+		ArrayList<Point2D> oneMbr = new ArrayList<>();
 		try{
 			String statement;
 			statement = "select "+
 					" id, length, stroke_clazz, "+
 					" flatted_arc_series, " +
-					" st_asText(flatted_arc_series) as strokeString" +
+					" st_asText(flatted_arc_series) as strokeString, " +
+					" st_envelope(flatted_arc_series) as MBR "+
 					" from "+SCHEMA+"."+TBNAME2+" " +
 					" where" +
 					" st_intersects(" +
@@ -135,7 +143,7 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 							"),"+HandleDbTemplateSuper.WGS84_EPSG_CODE+"" +
 						")"+
 					") order by length desc;";
-			System.out.println(statement);
+//			System.out.println(statement);
 			ResultSet rs = execute(statement);
 			while(rs.next()){
 				_strokeId.add(rs.getInt("id"));
@@ -145,10 +153,46 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 				_strokeArcString.add(rs.getString("strokeString"));
 				_strokeIdToIndexHash.put(rs.getInt("id"), _strokeId.size()-1);
 				_strokeClazz.add(rs.getInt("stroke_clazz"));
+				
+				oneMbr = GeometryParsePostgres.pgGeometryPolygon((PGgeometry)rs.getObject("MBR"));
+				setMbr(oneMbr);
 			}
 			rs.close();
 		}catch(Exception e){
 			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * MBRの設定
+	 * @param oneMbr
+	 */
+	public void setMbr(ArrayList<Point2D> oneMbr){
+		if(oneMbr.size() == 0){	// うまくはいらないときは手動で.
+			Point2D maxXy = new Point2D.Double(), minXy = new Point2D.Double();
+			for(int i=0; i<_strokeArcPoint.get(_strokeArcPoint.size()-1).size(); i++){
+				if(i==0){
+					maxXy = _strokeArcPoint.get(_strokeArcPoint.size()-1).get(0);
+					minXy = _strokeArcPoint.get(_strokeArcPoint.size()-1).get(0);
+					continue;
+				}
+				if(maxXy.getX() < _strokeArcPoint.get(_strokeArcPoint.size()-1).get(i).getX()){// maxXの更新.
+					maxXy = new Point2D.Double(_strokeArcPoint.get(_strokeArcPoint.size()-1).get(i).getX(), maxXy.getY());
+				}if(maxXy.getY() < _strokeArcPoint.get(_strokeArcPoint.size()-1).get(i).getY()){// maxYの更新.
+					maxXy = new Point2D.Double(maxXy.getX(), _strokeArcPoint.get(_strokeArcPoint.size()-1).get(i).getY());
+				}if(minXy.getX() > _strokeArcPoint.get(_strokeArcPoint.size()-1).get(i).getX()){// minXの更新.
+					minXy = new Point2D.Double(_strokeArcPoint.get(_strokeArcPoint.size()-1).get(i).getX(), minXy.getY());
+				}if(minXy.getY() > _strokeArcPoint.get(_strokeArcPoint.size()-1).get(i).getY()){// minYの更新.
+					minXy = new Point2D.Double(minXy.getX(), _strokeArcPoint.get(_strokeArcPoint.size()-1).get(i).getY());
+				}
+			}
+			_mbrMaxXy.add(maxXy);
+			_mbrMinXy.add(minXy);
+		}else{	// うまくいくときはoneMbrを使う.
+//			System.out.println(_strokeArcString.get(_strokeArcString.size()-1));
+//			System.out.println(" mbr  "+oneMbr);
+			_mbrMinXy.add(oneMbr.get(0));
+			_mbrMaxXy.add(oneMbr.get(2));
 		}
 	}
 	
