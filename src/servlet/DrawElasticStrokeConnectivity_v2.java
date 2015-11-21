@@ -223,9 +223,9 @@ public class DrawElasticStrokeConnectivity_v2 {
 		// 中心点.
 		_graphics2d.drawOval(windowSize.x/2-2, windowSize.x/2-2, 4, 4);
 		// glue領域内側想定範囲.
-		_graphics2d.drawOval(windowSize.x/2-glueInnerRadius, windowSize.x/2-glueInnerRadius, glueInnerRadius*2, glueInnerRadius*2);
+//		_graphics2d.drawOval(windowSize.x/2-glueInnerRadius, windowSize.x/2-glueInnerRadius, glueInnerRadius*2, glueInnerRadius*2);
 		// glue領域外側想定範囲.
-		_graphics2d.drawOval(windowSize.x/2-glueOuterRadius, windowSize.x/2-glueOuterRadius, glueOuterRadius*2, glueOuterRadius*2);
+//		_graphics2d.drawOval(windowSize.x/2-glueOuterRadius, windowSize.x/2-glueOuterRadius, glueOuterRadius*2, glueOuterRadius*2);
 		
 		return bfImage;
 	}

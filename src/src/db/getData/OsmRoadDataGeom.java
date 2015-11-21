@@ -13,7 +13,7 @@ import org.postgis.PGgeometry;
 import servlet.DrawElasticRoad;
 import src.db.GeometryParsePostgres;
 import src.db.HandleDbTemplateSuper;
-
+import src.coordinate.*;
 
 /**
  * OSM道路データを扱う
@@ -122,7 +122,7 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 	/**
 	 * 指定したpolygon(wkt形式のString型)内の道路データを取得する
 	 */
-	public void getOsmRoadFromPolygon(Point2D aCenterLngLat, double aRadius){
+	public void getOsmRoadFromPolygon(Point2D aCenterLngLat, double aRadius, boolean innerCheck){
 		__linkId = new ArrayList<>();
 		__link = new ArrayList<>();
 		__sourceId = new ArrayList<>();
@@ -152,17 +152,25 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 					" and " +
 					" clazz > 12" +
 					"";
-			System.out.println(statement);
+//			System.out.println(statement);
 			ResultSet rs = execute(statement);
 			while(rs.next()){
 				__linkId.add(rs.getInt("id"));
-				__sourceId.add(rs.getInt("source"));
-				__targetId.add(rs.getInt("target"));
+				// innercheckがtrueだったらaRadiusの外側のノードIDを-1にする.
+				if(!innerCheck || LngLatMercatorUtility.calcDistanceFromLngLat(aCenterLngLat, new Point2D.Double(rs.getDouble("x1"), rs.getDouble("y1"))) < aRadius){
+					__sourceId.add(rs.getInt("source"));
+				}else{
+					__sourceId.add(-1);
+				}
+				if(!innerCheck || LngLatMercatorUtility.calcDistanceFromLngLat(aCenterLngLat, new Point2D.Double(rs.getDouble("x2"), rs.getDouble("y2"))) < aRadius){
+					__targetId.add(rs.getInt("target"));
+				}else{
+					__targetId.add(-1);
+				}
 				__link.add((Line2D)new Line2D.Double(rs.getDouble("x1"), rs.getDouble("y1"), rs.getDouble("x2"), rs.getDouble("y2")));
 				__length.add(rs.getDouble("km"));
 				__length2.add(rs.getDouble("cost"));
 				__clazz.add(rs.getInt("clazz"));
-//				System.out.println(GeometryParsePostgres.getLineStringMultiPoint((PGgeometry)rs.getObject("geom")));
 				__arc.add(GeometryParsePostgres.getLineStringMultiLine((PGgeometry)rs.getObject("geom_way")));
 			}
 			rs.close();

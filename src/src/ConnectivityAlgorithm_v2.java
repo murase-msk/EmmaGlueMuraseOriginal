@@ -114,7 +114,7 @@ public class ConnectivityAlgorithm_v2 {
 	public void func(ArrayList<Point2D> aStrokeArcPoint){
 		// 新しく描画か確定したストロークと保留キューにあるストロークが交差するか確かめる.
 		for(int j=0; j<_reserveQueue.size(); j++){
-			if(isIntersectTwoStroke(aStrokeArcPoint, _strokeArcPoint.get(_reserveQueue.get(j)))){
+			if(isIntersectTwoStrokePoint2D(aStrokeArcPoint, _strokeArcPoint.get(_reserveQueue.get(j)))){
 				_selectedStrokeIndex.add(_reserveQueue.get(j));
 				//System.out.println("func add");
 				if(_selectedStrokeIndex.size() > MAX_DRAW_NUM) break;// 指定した数だけ描画したら終了.
@@ -188,7 +188,7 @@ public class ConnectivityAlgorithm_v2 {
 			}
 			
 			// 普通に交差判定.
-			if(isIntersectTwoStroke(aStrokeArcPoint, _strokeArcPoint.get(_selectedStrokeIndex.get(i)))){
+			if(isIntersectTwoStrokePoint2D(aStrokeArcPoint, _strokeArcPoint.get(_selectedStrokeIndex.get(i)))){
 				return true;
 			}
 		}
@@ -196,12 +196,36 @@ public class ConnectivityAlgorithm_v2 {
 	}
 	
 	/**
+	 * 2つのストロークの交差判定遅い版? こっちの方が早い? あまり変わらない?
+	 * @param s1
+	 * @param s2
+	 * @return
+	 */
+	public boolean isIntersectTwoStrokePoint2D(ArrayList<Point2D> s1, ArrayList<Point2D> s2){
+		for(int i=0; i<s1.size()-1; i++){
+			for(int j=0; j<s2.size()-1; j++){
+				if(new Line2D.Double(s1.get(i), s1.get(i+1)).intersectsLine(s2.get(j).getX(), s2.get(j).getY(), s2.get(j+1).getX(), s2.get(j+1).getY())){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	/**
 	 * 2つのストロークが交差するか
 	 * @param s1 _strokeArcPointの形
 	 * @param s2 _strokeArcPointの形
 	 * @return
 	 */
 	public boolean isIntersectTwoStroke(ArrayList<Point2D> s1, ArrayList<Point2D> s2){
+		// 端点が同じだったら消す
+		if(s1.get(0).getX() == s1.get(s1.size()-1).getX() && s1.get(0).getY() == s1.get(s1.size()-1).getY()){
+			s1.remove(s1.size()-1);
+		}
+		if(s2.get(0).getX() == s2.get(s2.size()-1).getX() && s2.get(0).getY() == s2.get(s2.size()-1).getY()){
+			s2.remove(s2.size()-1);
+		}
+		
 		// 端点で交差するか確かめる.
 		if(
 			(s1.get(0).getX() == s2.get(0).getX() && s1.get(0).getY() == s2.get(0).getY())||
@@ -229,26 +253,15 @@ public class ConnectivityAlgorithm_v2 {
 	 * @return
 	 */
 	public boolean isIntersectLines(ArrayList<Line2D> segmentList){
-		HashSet<Double> hash = new HashSet<>();
+		
+		HashSet<String> hashString = new HashSet<>();
 		for(int i=0; i<segmentList.size(); i++){
-			hash.add(segmentList.get(i).getX1());
-			hash.add(segmentList.get(i).getX2());
+			hashString.add(""+segmentList.get(i).getX1()+"_"+segmentList.get(i).getY1());
+			hashString.add(""+segmentList.get(i).getX2()+"_"+segmentList.get(i).getY2());
 		}
-		
-		if(hash.size() == segmentList.size()){
-			return false;// 交差しない.
+		if(hashString.size() == segmentList.size()*2){
+			return false;	// 交差しない.
 		}
-		
-		hash = new HashSet<>();
-		for(int i=0; i<segmentList.size(); i++){
-			hash.add(segmentList.get(i).getY2());
-			hash.add(segmentList.get(i).getY2());
-		}
-		
-		if(hash.size() == segmentList.size()){
-			return false;// 交差しない.
-		}
-		
 		return true;// 交差する.
 	}
 	

@@ -45,6 +45,9 @@ public class MainServlet extends HttpServlet{
 		
 		type = request.getParameter("type");
 		switch(type){
+		case "DrawMitinariSenbetuAlgorithm":
+			new DrawMitinariSenbetuAlgorithm(request, response);
+			break;
 		case "DrawElasticStrokeConnectivity":
 			new DrawElasticStrokeConnectivity_v2(request, response);
 			break;
