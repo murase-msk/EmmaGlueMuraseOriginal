@@ -147,15 +147,17 @@ public class DrawElasticStroke_v2 {
 		osmStrokeDataGeom.insertStrokeData(_convertContext.convertXyCoordinateToLngLat(upperLeftOuterGlueXY), _convertContext.convertXyCoordinateToLngLat(LowerRightOuterGlueXY));
 		osmStrokeDataGeom.endConnection();
 		// 上位30本だけ取得.
-//		ArrayList<ArrayList<Point2D>> topN_strokes = new ArrayList<>();
-//		ArrayList<Integer> topN_strokeClazz = new ArrayList<>();
-//		for(int i=0; i<30; i++){
-//			topN_strokes.add(osmStrokeDataGeom._strokeArcPoint.get(i));
-//			topN_strokeClazz.add(osmStrokeDataGeom._strokeClazz.get(i));
-//		}
+		ArrayList<ArrayList<Point2D>> topN_strokes = new ArrayList<>();
+		ArrayList<Integer> topN_strokeClazz = new ArrayList<>();
+		for(int i=0; i<30; i++){
+			topN_strokes.add(osmStrokeDataGeom._strokeArcPoint.get(i));
+			topN_strokeClazz.add(osmStrokeDataGeom._strokeClazz.get(i));
+		}
 		
-		roadPath.addAll(osmStrokeDataGeom._strokeArcPoint);
-		clazzList.addAll(osmStrokeDataGeom._strokeClazz);
+		roadPath.addAll(topN_strokes);
+		clazzList.addAll(topN_strokeClazz);
+		//roadPath.addAll(osmStrokeDataGeom._strokeArcPoint);
+		//clazzList.addAll(osmStrokeDataGeom._strokeClazz);
 		
 		OsmRoadDataGeom osmRoadDataGeom = new OsmRoadDataGeom();
 		osmRoadDataGeom.startConnection();

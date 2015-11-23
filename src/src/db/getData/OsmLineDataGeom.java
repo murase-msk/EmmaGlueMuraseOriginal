@@ -66,7 +66,7 @@ public class OsmLineDataGeom extends HandleDbTemplateSuper{
 							")"+
 						") ";
 			stmt += aValue.equals("all") ? (" and "+aColumnName+"<>''") : (" and "+aColumnName+"='"+ aValue+"'");
-			System.out.println(stmt);
+//			System.out.println(stmt);
 			ResultSet rs = execute(stmt);
 			while(rs.next()){
 				_clazz.add(2);	// 地下鉄はすべて２.

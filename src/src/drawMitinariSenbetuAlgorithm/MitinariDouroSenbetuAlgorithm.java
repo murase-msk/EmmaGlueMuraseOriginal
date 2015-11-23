@@ -1,4 +1,4 @@
-package src.mitinari;
+package src.drawMitinariSenbetuAlgorithm;
 
 import java.awt.Graphics2D;
 import java.awt.Point;

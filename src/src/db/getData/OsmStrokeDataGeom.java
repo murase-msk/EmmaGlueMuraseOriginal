@@ -87,7 +87,7 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 								"))'," +
 							""+HandleDbTemplateSuper.WGS84_EPSG_CODE+")" +
 						") order by length desc;";
-			System.out.println(statement);
+//			System.out.println(statement);
 			ResultSet rs = execute(statement);
 			while(rs.next()){
 				_strokeId.add(rs.getInt("id"));
@@ -322,7 +322,7 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 	 * @param aLowerRightLngLat
 	 * @param radiusMeter 半径(メートル)
 	 */
-	public void calcStrokeOverlapedCircle(Point2D centerLngLat, double radiusMeter){
+	public void calcStrokeOverlapedCircle(Point2D centerLngLat, double radiusMeter, boolean orderFlg){
 		_strokeId = new ArrayList<>();
 		_strokeLength = new ArrayList<>();
 		_strokeArc = new ArrayList<>();
@@ -353,8 +353,10 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 									radiusMeter+
 								"), " +
 							""+HandleDbTemplateSuper.WGS84_EPSG_CODE+")" +
-						",flatted_arc_series)";
-			System.out.println(statement);
+						",flatted_arc_series)" +
+						"";
+			statement += orderFlg ? " order by length desc ":"";
+//			System.out.println(statement);
 			ResultSet rs = execute(statement);
 			while(rs.next()){
 				_strokeId.add(rs.getInt("id"));

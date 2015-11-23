@@ -1,4 +1,4 @@
-package servlet.paint;
+package src.paint;
 
 import java.awt.BasicStroke;
 import java.awt.Color;

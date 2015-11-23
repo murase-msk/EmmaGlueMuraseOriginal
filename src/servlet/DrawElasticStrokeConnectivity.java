@@ -144,7 +144,7 @@ public class DrawElasticStrokeConnectivity {
 		// context(全体)にかかるストロークを取り出す.
 //		osmStrokeDataGeom.insertStrokeData(_convertContext.convertXyCoordinateToLngLat(upperLeftOuterGlueXY), _convertContext.convertXyCoordinateToLngLat(LowerRightOuterGlueXY));
 		// focus-glueにかかるストロークだけを描画してみる.
-		osmStrokeDataGeom.calcStrokeOverlapedCircle(centerLngLat, glueInnerRadiusMeter);
+		osmStrokeDataGeom.calcStrokeOverlapedCircle(centerLngLat, glueInnerRadiusMeter, false);
 		
 		osmStrokeDataGeom.endConnection();
 		
