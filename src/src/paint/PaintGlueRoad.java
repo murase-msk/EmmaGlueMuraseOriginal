@@ -8,6 +8,8 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
+import com.sun.org.apache.bcel.internal.generic.NEW;
+
 import src.ElasticPoint;
 import src.coordinate.ConvertLngLatXyCoordinate;
 import src.coordinate.ConvertMercatorXyCoordinate;
@@ -52,6 +54,10 @@ public class PaintGlueRoad {
 	private ConvertMercatorXyCoordinate _contextMercatorConvert;
 	
 	
+	// 出力結果.
+	/** 変形後の緯度経度  */
+	public ArrayList<ArrayList<Point2D>> transformedPoint = new ArrayList<>();
+	
 	public PaintGlueRoad(Point2D aCenterLngLat, int aFocusScale, int aContextScale, int aGlueInnerRadius, int aGlueOuterRadius, 
 			double aGlueInnerRadiusMeter, double aGlueOuterRadiusMeter, Graphics2D aGraphics2d, 
 			ConvertLngLatXyCoordinate aConvertFocus, ConvertLngLatXyCoordinate aConvertContext, ConvertMercatorXyCoordinate aContextMercatorConvert){
@@ -95,9 +101,10 @@ public class PaintGlueRoad {
 				Math.pow(2, focusScale-contextScale), 
 				LngLatMercatorUtility.ConvertLngLatToMercator(centerLngLat));
 		
+		transformedPoint = new ArrayList<>();
 		for(int i=0; i<aPointSeries.size(); i++){
 			Point pXy;// あるセグメントにおける点.
-			ArrayList<Point2D> path = new ArrayList<>();	// .
+			ArrayList<Point2D> path = new ArrayList<>();	// 1つのリンクの変形後のリンク形状(xy座標系).
 			for(Point2D onePoint : aPointSeries.get(i)){
 				// 2点の緯度経度から中心までの距離(メートル)を求める.
 				double pMeter = LngLatMercatorUtility.calcDistanceFromLngLat(centerLngLat, onePoint);
@@ -115,7 +122,7 @@ public class PaintGlueRoad {
 				path.add(pXy);
 //				paint2dLine(new Line2D.Double(p1Xy, p2Xy), Color.pink, (float)3, __clazz.get(i));
 			}
-			
+			transformedPoint.add(path);
 			dispatchLineStyle(path, __clazz.get(i), bluePath, greenPath, redPath, orangePath, yellowPath, whitePath, railPath, subwayPath);
 		}
 		
@@ -241,6 +248,9 @@ public class PaintGlueRoad {
 			paintPath(blueLine, 7, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(137,163,202));
 		}
 	}
+	
+	
+	
 	
 	/**
 	 * パスの描画

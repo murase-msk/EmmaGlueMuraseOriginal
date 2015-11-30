@@ -20,7 +20,7 @@ import src.db.HandleDbTemplateSuper;
 public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 	
 	private static final String DBNAME = "osm_road_db";	// Database Name
-	private static final String SCHEMA = "stroke_v3";
+	private static final String SCHEMA = "stroke_v2";
 	private static final String TBNAME = "stroke_table";
 	private static final String TBNAME2 = "flatted_stroke_table";
 	private static final String USER = "postgres";			// user name for DB.

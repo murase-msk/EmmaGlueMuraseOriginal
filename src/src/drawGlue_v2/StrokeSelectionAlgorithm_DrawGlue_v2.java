@@ -56,6 +56,8 @@ public class StrokeSelectionAlgorithm_DrawGlue_v2 {
 //	private ConvertMercatorXyCoordinate _contextMercatorConvert;
 	
 	// 出力結果.
+	/** 選択されたストロークID */
+	public ArrayList<Integer> strokeId;
 	/** 選択された道路 */
 	public ArrayList<ArrayList<Point2D>> roadPath;
 	/** 選択された道路クラス */
@@ -171,11 +173,14 @@ public class StrokeSelectionAlgorithm_DrawGlue_v2 {
 		innerOuterStrokeId.addAll(hashSet2);
 //		System.out.println("変化ご: "+innerOuterStrokeId.size());
 
+		strokeId = new ArrayList<>();
 		roadPath = new ArrayList<>();
 		clazzList = new ArrayList<>();
 		for(Integer num: innerOuterStrokeId){
+			strokeId.add(num);
 			roadPath.add(osmStrokeDataGeom._strokeArcPoint.get(osmStrokeDataGeom._strokeIdToIndexHash.get(num)));
 			clazzList.add(osmStrokeDataGeom._strokeClazz.get(osmStrokeDataGeom._strokeIdToIndexHash.get(num)));
+			
 		}
 	}
 	

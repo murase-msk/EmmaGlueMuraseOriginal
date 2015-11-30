@@ -7,13 +7,17 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.sun.org.apache.bcel.internal.generic.NEW;
 
 import src.QuickSort2;
 import src.coordinate.ConvertLngLatXyCoordinate;
@@ -70,6 +74,25 @@ public class DrawGlue_v2 {
 	/** メルカトル座標系xy変換 */
 	private ConvertMercatorXyCoordinate _contextMercatorConvert;
 	
+	// ほしい値.
+	/** 選択されたストロークの形状(緯度経度) */
+	public ArrayList<ArrayList<Point2D>> _selectedRoadPath = new ArrayList<>();
+	/** 選択されたストロークのクラス */
+	public ArrayList<Integer> _selectedRoadClazz = new ArrayList<>();
+	/** 選択されたストロークのID */
+	public ArrayList<Integer> _selectedStrokeId = new ArrayList<>();
+	/** 選択されたどうろので変形後の道路形状(xy座標) */
+	public ArrayList<ArrayList<Point2D>> _selectedTransformedPoint = new ArrayList<>();
+	
+	
+//	for(int i=0; i<strokeSelectionAlgorithm.roadPath.size(); i++){
+//		System.out.println(strokeSelectionAlgorithm.roadId.get(i));
+//		System.out.println(strokeSelectionAlgorithm.clazzList.get(i));
+//		System.out.println(strokeSelectionAlgorithm.roadPath.get(i));
+//		System.out.println(paintGlueRoad.transformedPoint.get(i));
+//	}
+	
+	
 	public DrawGlue_v2(HttpServletRequest request, HttpServletResponse response){
 		
 		// 必須パラメータがあるか.
@@ -92,11 +115,49 @@ public class DrawGlue_v2 {
 		glueOuterRadius = Integer.parseInt(request.getParameter("glue_outer_radius"));
 		windowSize = new Point(glueOuterRadius*2, glueOuterRadius*2);
 		roadType = request.getParameter("roadType") == null  ? "car" : request.getParameter("roadType");
-		try{
-			OutputStream out=response.getOutputStream();
-			ImageIO.write( drawImage(), "png", out);
+		if(request.getParameter("option") == null){// ラスタの画像を返す.
+			try{
+				OutputStream out=response.getOutputStream();
+				ImageIO.write( drawImage(), "png", out);
+				
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}else if(request.getParameter("option").equals("vector")){	// 選択されたベクタの道路データを返す.
+			drawImage();
+			createVectorResponse(request, response);
+		}else{
 			
-		}catch(Exception e){
+		}
+	}
+	
+	/** ベクター用のレスポンス */
+	public void createVectorResponse(HttpServletRequest request, HttpServletResponse response){
+		// レスポンスの作成.
+		try{
+			response.setContentType("text/xml; charset=UTF-8");
+			PrintWriter out = response.getWriter();
+			out.println("<?xml version = \"1.0\" encoding = \"UTF-8\"?>");
+			out.println("<data>");
+			for(int i=0; i<_selectedStrokeId.size(); i++){
+				out.println("<oneStroke>");
+					out.println("<selectedStrokeId>");
+						out.println(_selectedStrokeId.get(i));
+					out.println("</selectedStrokeId>");
+					out.println("<selectedTransformedPoint>");
+						for(int j=0; j<_selectedTransformedPoint.get(i).size(); j++){
+							out.print("<xy>");
+							out.print(_selectedTransformedPoint.get(i).get(j).getX());
+							out.print(",");
+							out.print(_selectedTransformedPoint.get(i).get(j).getY());
+							out.print("</xy>");
+						}
+					out.println("</selectedTransformedPoint>");
+				out.println("</oneStroke>");
+			}
+			out.println("</data>");
+			out.close();
+		}catch(IOException e){
 			e.printStackTrace();
 		}
 	}
@@ -141,9 +202,9 @@ public class DrawGlue_v2 {
 		roadPath.addAll(strokeSelectionAlgorithm.roadPath);
 		clazzList.addAll(strokeSelectionAlgorithm.clazzList);
 		
-		
-		// roadPath.add().
-		// clazzList.add().
+		_selectedRoadPath = strokeSelectionAlgorithm.roadPath;
+		_selectedRoadClazz = strokeSelectionAlgorithm.clazzList;
+		_selectedStrokeId = strokeSelectionAlgorithm.strokeId;
 //		System.out.println("道なり道路選別手法　道路"+roadPath);
 //		System.out.println("道なり道路選別手法　道路クラス"+clazzList);
 		///////////////////////////////////////////////////
@@ -170,6 +231,7 @@ public class DrawGlue_v2 {
 		// glue部分だけ描画
 		PaintGlueRoad paintGlueRoad = new PaintGlueRoad(centerLngLat, focusScale, contextScale, glueInnerRadius, glueOuterRadius, glueInnerRadiusMeter, glueOuterRadiusMeter, _graphics2d, _convertFocus, _convertContext, _contextMercatorConvert);
 		paintGlueRoad.paintElasticRoadData(roadPath, clazzList);
+		_selectedTransformedPoint = paintGlueRoad.transformedPoint;
 		
 		BasicStroke wideStroke = new BasicStroke(3);
 		_graphics2d.setStroke(wideStroke);

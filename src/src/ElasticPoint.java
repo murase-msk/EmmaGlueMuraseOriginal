@@ -44,7 +44,7 @@ public class ElasticPoint {
 		_glueOuterLengthMercator = aGlueOuterLengthMercator;
 		_magnifyingPower = aMagnifyingPower;
 		_centerPointMercator = aCenterPointMercator;
-		
+
 		// 開始点，終了点，制御点の計算.
 		_startPoint = new Point2D.Double(_glueInnerLengthMercator/_magnifyingPower, _glueInnerLengthMercator);
 		_endPoint = new Point2D.Double(_glueOuterLengthMercator, _glueOuterLengthMercator);
@@ -53,6 +53,9 @@ public class ElasticPoint {
 		_controlPoint1 = new Point2D.Double(_startPoint.getX()+ydF*FOCUS_SIDE_SMOOTH_RATIO, _startPoint.getY()+yd*FOCUS_SIDE_SMOOTH_RATIO);
 		_controlPoint2 = new Point2D.Double(_endPoint.getX()-yd*CONTEXT_SIDE_SMOOTH_RATIO, _endPoint.getY()-yd*CONTEXT_SIDE_SMOOTH_RATIO);
 		
+//		System.out.println(_magnifyingPower);
+//		System.out.println(_glueInnerLengthMercator);
+//		System.out.println(_glueOuterLengthMercator);
 //		System.out.println(_startPoint);
 //		System.out.println(_endPoint);
 //		System.out.println(_controlPoint1);
@@ -75,8 +78,9 @@ public class ElasticPoint {
 		// 元の点に対して移動した点の増加幅.
 		double nobi = movedLength/_pointLengthMercator;
 //		System.out.println(aOuterRatio);
-//		System.out.println(movedLength);
+//		System.out.println("##############");
 //		System.out.println(_pointLengthMercator);
+//		System.out.println(movedLength);
 //		System.out.println(nobi);
 //		System.exit(0);
 		return new Point2D.Double(
