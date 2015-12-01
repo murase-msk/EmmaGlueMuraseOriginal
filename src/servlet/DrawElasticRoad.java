@@ -98,6 +98,8 @@ public class DrawElasticRoad {
 			OutputStream out=response.getOutputStream();
 			ImageIO.write( drawImage(), "png", out);
 			
+			out.flush();
+			out.close();
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -184,17 +186,12 @@ public class DrawElasticRoad {
 			osmPolygonDataGeom.addFacilityLine("amenity", "parking", _getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat);	// 駐車場.
 			osmPolygonDataGeom.addFacilityPolygon("landuse", "reservoir", _getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat);	// 池.
 			osmPolygonDataGeom.addFacilityLine("landuse", "reservoir", _getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat);	// 池.
-			osmPolygonDataGeom.addFacilityPolygon("natural", "water", _getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat);	// 池.
-			osmPolygonDataGeom.addFacilityLine("natural", "water", _getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat);	// 池.
+//			osmPolygonDataGeom.addFacilityPolygon("natural", "water", _getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat);	// 池.
+//			osmPolygonDataGeom.addFacilityLine("natural", "water", _getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat);	// 池.
 			osmPolygonDataGeom.addFacilityPolygon("landuse", "forest", _getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat);	// 人工林の描画.
 			osmPolygonDataGeom.addFacilityLine("landuse", "forest", _getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat);	// 人工林の描画.
 			osmPolygonDataGeom.addFacilityPolygon("landuse", "grass", _getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat);	// 芝地の描画.
 			osmPolygonDataGeom.addFacilityLine("landuse", "grass", _getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat);	// 芝地の描画.
-
-			
-			
-			
-			
 			
 			osmPolygonDataGeom.endConnection();
 			polygonPath.addAll(osmPolygonDataGeom._facilityLocation);

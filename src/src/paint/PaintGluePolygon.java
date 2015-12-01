@@ -130,7 +130,7 @@ public class PaintGluePolygon {
 					paintPolygon(_graphics2d, _transformedPoint.get(i), new Color(246, 238, 183));
 					break;
 				case "garden":
-					paintPolygon(_graphics2d, _transformedPoint.get(i), new Color(246, 238, 183));
+					paintPolygon(_graphics2d, _transformedPoint.get(i), new Color(206, 235, 167));
 					break;
 				case "pitch":
 					paintPolygon(_graphics2d, _transformedPoint.get(i), new Color(138, 210, 175));
