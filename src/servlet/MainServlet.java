@@ -33,10 +33,13 @@ public class MainServlet extends HttpServlet{
 	 * type=...&.....
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String url = ((HttpServletRequest)request).getRequestURL().toString();
+		String queryString = ((HttpServletRequest)request).getQueryString();
+		System.out.println(url + "?" + queryString); 
+		System.out.println("client IP address : "+getClientIpAddr(request));
+		
 		// パラメータの受け取り.
 		String type="";	// サーバのやること.
-		
-//		System.out.println("postRequest");
 		
 		if(request.getParameter("type")==null){
 			ErrorMsg.errorResponse(request, response, "typeパラメータがありません");
@@ -82,5 +85,24 @@ public class MainServlet extends HttpServlet{
 		doGet(request, response);
 	}
 
-
+	
+	public static String getClientIpAddr(HttpServletRequest request) {  
+        String ip = request.getHeader("X-Forwarded-For");  
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+            ip = request.getHeader("Proxy-Client-IP");  
+        }  
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+            ip = request.getHeader("WL-Proxy-Client-IP");  
+        }  
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+            ip = request.getHeader("HTTP_CLIENT_IP");  
+        }  
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+            ip = request.getHeader("HTTP_X_FORWARDED_FOR");  
+        }  
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  
+            ip = request.getRemoteAddr();  
+        }  
+        return ip;  
+    }  
 }

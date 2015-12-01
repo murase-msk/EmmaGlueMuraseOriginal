@@ -114,7 +114,7 @@ public class DrawGlue_v2 {
 		glueInnerRadius = Integer.parseInt(request.getParameter("glue_inner_radius"));
 		glueOuterRadius = Integer.parseInt(request.getParameter("glue_outer_radius"));
 		windowSize = new Point(glueOuterRadius*2, glueOuterRadius*2);
-		roadType = request.getParameter("roadType") == null  ? "car" : request.getParameter("roadType");
+//		roadType = request.getParameter("roadType") == null  ? "car" : request.getParameter("roadType");
 		if(request.getParameter("option") == null){// ラスタの画像を返す.
 			try{
 				OutputStream out=response.getOutputStream();
@@ -196,7 +196,7 @@ public class DrawGlue_v2 {
 		ArrayList<Integer> clazzList = new ArrayList<>();
 		
 		////////////////////////////////////////////////////////////////
-		//////////////道路選別/////////////////////////
+		//////////////道路選別///////////////////////////////////////////
 		////////////////////////////////////////////////////////////////
 		StrokeSelectionAlgorithm_DrawGlue_v2 strokeSelectionAlgorithm = new StrokeSelectionAlgorithm_DrawGlue_v2(centerLngLat, glueInnerRadius, glueOuterRadius, glueInnerRadiusMeter, glueOuterRadiusMeter, _graphics2d);
 		roadPath.addAll(strokeSelectionAlgorithm.roadPath);
@@ -216,7 +216,7 @@ public class DrawGlue_v2 {
 		//////////////////////////////////
 		// 高速道路を取得.///////////////
 		//////////////////////////////////
-		osmRoadDataGeom.insertOsmRoadData(_getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat, roadType, " clazz <=12");
+		osmRoadDataGeom.insertOsmRoadData(_getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat, "car", " clazz <=12");
 		roadPath.addAll(osmRoadDataGeom._arc2);
 		clazzList.addAll(osmRoadDataGeom._clazz);
 		//////////////////////////////////
