@@ -11,6 +11,7 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
@@ -50,6 +51,8 @@ public class DrawElasticRoad {
 	
 	/** 道路の種類(car, bikeFoot) */
 	public String roadType = "car";
+	/** ポリゴンの描画有無 */
+	public boolean isDrawPolygon = false;
 	
 	// 中心点からglue内側の長さ.
 	public double glueInnerRadiusMeter;
@@ -94,6 +97,7 @@ public class DrawElasticRoad {
 		glueOuterRadius = Integer.parseInt(request.getParameter("glue_outer_radius"));
 		windowSize = new Point(glueOuterRadius*2, glueOuterRadius*2);
 		roadType = request.getParameter("roadType") == null  ? "car" : request.getParameter("roadType");
+		isDrawPolygon = request.getParameter("isDrawPolygon") == null ? false : request.getParameter("isDrawPolygon").equals("true")?true:false;
 		try{
 			OutputStream out=response.getOutputStream();
 			ImageIO.write( drawImage(), "png", out);
@@ -172,14 +176,13 @@ public class DrawElasticRoad {
 //		paintElasticRoadData(osmLineDataGeom._arc, osmLineDataGeom._clazz);
 		
 		// その他の地形の描画.
-		if(roadType.equals("all")){
+		if(isDrawPolygon){
 			ArrayList<ArrayList<Point2D>> polygonPath = new ArrayList<>();
 			ArrayList<String> polygonType = new ArrayList<>();
 			
 			OsmPolygonDataGeom osmPolygonDataGeom = new OsmPolygonDataGeom();
 			osmPolygonDataGeom.startConnection();
 			// 上の方ほど下に描画される.
-			
 			osmPolygonDataGeom.addFacilityPolygon("leisure", "garden", _getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat);	// 
 			osmPolygonDataGeom.addFacilityPolygon("leisure", "pitch", _getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat);	// 
 			osmPolygonDataGeom.addFacilityPolygon("amenity", "parking", _getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat);	// 駐車場

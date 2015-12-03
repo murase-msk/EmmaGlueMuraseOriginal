@@ -69,8 +69,8 @@ public class MainServlet extends HttpServlet{
 		case "DrawSimpleRoad":
 			new DrawSimpleRoad(request, response);
 			break;
-		case "ElasticPoints":
-			new ElasticPoints(request, response);
+		case "ConvertElasticPoints":
+			new ConvertElasticPoints(request, response);
 			break;
 		case "Test":
 			new Test(request, response);

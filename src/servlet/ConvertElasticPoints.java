@@ -20,11 +20,11 @@ import src.coordinate.LngLatMercatorUtility;
 
 /**
  * 点(複数)をglueに描画できる形に変換する
- * http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=ElasticPoints&centerLngLat=136.9288336363183,35.158167325045824&points=136.92588320639172,35.15937778672364,136.9266127672479,35.15893921573326,136.9270526495242,35.15869361494546,136.92767492201676,35.15823749722958,136.92857614424028,35.15764103174276,136.92920914557283,35.15704456188256,136.92994943525997,35.15660597831222,136.93057170775256,35.15601827262135,136.93055025008164,35.156000729102885&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300
+ * http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=ConvertElasticPoints&centerLngLat=136.9288336363183,35.158167325045824&points=136.92588320639172,35.15937778672364,136.9266127672479,35.15893921573326,136.9270526495242,35.15869361494546,136.92767492201676,35.15823749722958,136.92857614424028,35.15764103174276,136.92920914557283,35.15704456188256,136.92994943525997,35.15660597831222,136.93057170775256,35.15601827262135,136.93055025008164,35.156000729102885&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300
  * @author murase
  *
  */
-public class ElasticPoints {
+public class ConvertElasticPoints {
 	/** 地図の大きさ */
 	private Point windowSize = new Point(700, 700);
 	/** 初期の緯度経度Point2D形式 */
@@ -57,7 +57,7 @@ public class ElasticPoints {
 	private ConvertMercatorXyCoordinate _contextMercatorConvert;
 	
 	
-	public ElasticPoints(HttpServletRequest request, HttpServletResponse response){
+	public ConvertElasticPoints(HttpServletRequest request, HttpServletResponse response){
 		
 		// 必須パラメータがあるか.
 		if(request.getParameter("centerLngLat")==null ||
