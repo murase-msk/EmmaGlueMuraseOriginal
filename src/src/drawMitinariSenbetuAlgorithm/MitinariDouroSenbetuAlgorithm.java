@@ -48,6 +48,7 @@ public class MitinariDouroSenbetuAlgorithm {
 	/** 中心点からglue外側の長さ(メートル)  */
 	private double glueOuterRadiusMeter;
 	
+	// 求める値.
 	/** 道なり選別手法によって選択されたリンクの集合 */
 	public ArrayList<DirectLink> _selectedLinkSet = new ArrayList<>();
 	

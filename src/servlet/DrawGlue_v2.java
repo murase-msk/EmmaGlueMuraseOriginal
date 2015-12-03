@@ -85,13 +85,6 @@ public class DrawGlue_v2 {
 	public ArrayList<ArrayList<Point2D>> _selectedTransformedPoint = new ArrayList<>();
 	
 	
-//	for(int i=0; i<strokeSelectionAlgorithm.roadPath.size(); i++){
-//		System.out.println(strokeSelectionAlgorithm.roadId.get(i));
-//		System.out.println(strokeSelectionAlgorithm.clazzList.get(i));
-//		System.out.println(strokeSelectionAlgorithm.roadPath.get(i));
-//		System.out.println(paintGlueRoad.transformedPoint.get(i));
-//	}
-	
 	
 	public DrawGlue_v2(HttpServletRequest request, HttpServletResponse response){
 		
@@ -153,6 +146,18 @@ public class DrawGlue_v2 {
 							out.print("</xy>");
 						}
 					out.println("</selectedTransformedPoint>");
+					out.println("<selectedTransformedLngLat>");
+					for(int j=0; j<_selectedRoadPath.get(i).size(); j++){
+						out.println("<lngLat>");
+						out.print(_selectedRoadPath.get(i).get(j).getX());
+						out.print(",");
+						out.print(_selectedRoadPath.get(i).get(j).getY());
+						out.println("</lngLat>");
+					}
+					out.println("</selectedTransformedLngLat>");
+					out.println("<roadClazz>");
+					out.println(_selectedRoadClazz.get(i));
+					out.println("</roadClazz>");
 				out.println("</oneStroke>");
 			}
 			out.println("</data>");

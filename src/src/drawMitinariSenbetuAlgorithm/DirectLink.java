@@ -10,8 +10,8 @@ import java.util.ArrayList;
  */
 public class DirectLink {
 	
-	int linkId;
-	Line2D link;
+	public int linkId;
+	public Line2D link;
 	int sourceId;
 	int targetId;
 	double length;

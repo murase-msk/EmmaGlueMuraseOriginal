@@ -8,7 +8,9 @@ import java.awt.RenderingHints;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
@@ -64,6 +66,7 @@ public class DrawMitinariSenbetuAlgorithm {
 	
 	/** 道路の種類(car, bikeFoot) */
 	public String roadType = "car";
+	public String option = "";
 	
 	/** 中心点からglue内側の長さ(メートル) */
 	public double glueInnerRadiusMeter;
@@ -82,6 +85,17 @@ public class DrawMitinariSenbetuAlgorithm {
 	public ConvertLngLatXyCoordinate _convertContext;
 	/** メルカトル座標系xy変換 */
 	public ConvertMercatorXyCoordinate _contextMercatorConvert;
+	
+	// ほしい値.
+	/** 選択されたリンクの形状(緯度経度) */
+	public ArrayList<ArrayList<Point2D>> _selectedRoadPath = new ArrayList<>();
+	/** 選択されたリンクのクラス */
+	public ArrayList<Integer> _selectedRoadClazz = new ArrayList<>();
+	/** 選択されたのリンクID */
+	public ArrayList<Integer> _selectedLinkId = new ArrayList<>();
+	/** 選択されたリンクで変形後の道路形状(xy座標) */
+	public ArrayList<ArrayList<Point2D>> _selectedTransformedPoint = new ArrayList<>();
+
 	
 	/**
 	 * http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawMitinariSenbetuAlgorithm&centerLngLat=136.9324779510498,35.160402404742165&focus_zoom_level=16&context_zoom_level=14&glue_inner_radius=125&glue_outer_radius=200&roadType=car
@@ -109,14 +123,66 @@ public class DrawMitinariSenbetuAlgorithm {
 		glueOuterRadius = Integer.parseInt(request.getParameter("glue_outer_radius"));
 		windowSize = new Point(glueOuterRadius*2, glueOuterRadius*2);
 		roadType = request.getParameter("roadType") == null  ? "car" : request.getParameter("roadType");
-		try{
-			OutputStream out=response.getOutputStream();
-			ImageIO.write( drawImage(), "png", out);
+		option = request.getParameter("option") == null ? "" : request.getParameter("option");
+		if(option.equals("")){// ラスタの画像を返す.
+			try{
+				OutputStream out=response.getOutputStream();
+				ImageIO.write( drawImage(), "png", out);
+				
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}else if(option.equals("vector")){	// 選択されたベクタの道路データを返す.
+			drawImage();
+			createVectorResponse(request, response);
+		}else{
 			
-		}catch(Exception e){
+		}
+	}
+	
+	/** ベクター用のレスポンス */
+	public void createVectorResponse(HttpServletRequest request, HttpServletResponse response){
+		// レスポンスの作成.
+		try{
+			response.setContentType("text/xml; charset=UTF-8");
+			PrintWriter out = response.getWriter();
+			out.println("<?xml version = \"1.0\" encoding = \"UTF-8\"?>");
+			out.println("<data>");
+			for(int i=0; i<_selectedLinkId.size(); i++){
+				out.println("<oneLink>");
+					out.println("<selectedLinkId>");
+						out.println(_selectedLinkId.get(i));
+					out.println("</selectedLinkId>");
+					out.println("<selectedTransformedPoint>");
+						for(int j=0; j<_selectedTransformedPoint.get(i).size(); j++){
+							out.print("<xy>");
+							out.print(_selectedTransformedPoint.get(i).get(j).getX());
+							out.print(",");
+							out.print(_selectedTransformedPoint.get(i).get(j).getY());
+							out.print("</xy>");
+						}
+					out.println("</selectedTransformedPoint>");
+					out.println("<selectedTransformedLngLat>");
+						for(int j=0; j<_selectedRoadPath.get(i).size(); j++){
+							out.println("<lngLat>");
+							out.print(_selectedRoadPath.get(i).get(j).getX());
+							out.print(",");
+							out.print(_selectedRoadPath.get(i).get(j).getY());
+							out.println("</lngLat>");
+						}
+					out.println("</selectedTransformedLngLat>");
+					out.println("<roadClazz>");
+					out.println(_selectedRoadClazz.get(i));
+					out.println("</roadClazz>");
+				out.println("</oneLink>");
+			}
+			out.println("</data>");
+			out.close();
+		}catch(IOException e){
 			e.printStackTrace();
 		}
 	}
+	
 	/**
 	 * 道路データの取得しbufferedimageの作成
 	 * @return
@@ -167,12 +233,36 @@ public class DrawMitinariSenbetuAlgorithm {
 		
 //		System.out.println("道なり道路選別手法　道路"+roadPath);
 //		System.out.println("道なり道路選別手法　道路クラス"+clazzList);
+		
+		if(option.equals("vector")){
+			_selectedRoadPath = new ArrayList<>();
+			_selectedRoadClazz = new ArrayList<>();
+			_selectedLinkId = new ArrayList<>();
+			for(int i=0; i<mitinariDouroSenbetuAlgorithm._selectedLinkSet.size(); i++){
+				_selectedRoadClazz.add(mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).clazz);
+				_selectedLinkId.add(mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).linkId);
+				ArrayList<Point2D> oneArc = new ArrayList<>();
+				for(int j=0; j<mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).arc.size(); j++){
+					oneArc.add(mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).arc.get(j).getP1());
+					if(j==mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).arc.size()-1){
+						oneArc.add(mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).arc.get(j).getP2());
+					}
+				}
+				_selectedRoadPath.add(oneArc);
+			}
+		}
 		///////////////////////////////////////////////////
 		///////////////////////////////////////////////////
 		///////////////////////////////////////////////////
 		
 		OsmRoadDataGeom osmRoadDataGeom = new OsmRoadDataGeom();
 		osmRoadDataGeom.startConnection();
+		// 主要道路をすべて選択.
+//		osmRoadDataGeom.insertOsmRoadData(_getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat, roadType, " clazz <=12");
+//		roadPath.addAll(osmRoadDataGeom._arc2);
+//		clazzList.addAll(osmRoadDataGeom._clazz);
+
+		
 		//////////////////////////////////
 		// 高速道路を取得.///////////////
 		//////////////////////////////////
@@ -191,6 +281,7 @@ public class DrawMitinariSenbetuAlgorithm {
 		// glue部分だけ描画
 		PaintGlueRoad paintGlueRoad = new PaintGlueRoad(centerLngLat, focusScale, contextScale, glueInnerRadius, glueOuterRadius, glueInnerRadiusMeter, glueOuterRadiusMeter, _graphics2d, _convertFocus, _convertContext, _contextMercatorConvert);
 		paintGlueRoad.paintElasticRoadData(roadPath, clazzList);
+		_selectedTransformedPoint = paintGlueRoad.transformedPoint;
 		
 		BasicStroke wideStroke = new BasicStroke(3);
 		_graphics2d.setStroke(wideStroke);
