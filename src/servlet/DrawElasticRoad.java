@@ -9,7 +9,9 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -51,6 +53,7 @@ public class DrawElasticRoad {
 	
 	/** 道路の種類(car, bikeFoot) */
 	public String roadType = "car";
+	public String option = "";
 	/** ポリゴンの描画有無 */
 	public boolean isDrawPolygon = false;
 	
@@ -75,6 +78,16 @@ public class DrawElasticRoad {
 //	public Point2D _lowerRightLngLat;
 	
 	
+	// ほしい値.
+	/** 選択されたリンクの形状(緯度経度) */
+	public ArrayList<ArrayList<Point2D>> _selectedRoadPath = new ArrayList<>();
+	/** 選択されたリンクのクラス */
+	public ArrayList<Integer> _selectedRoadClazz = new ArrayList<>();
+	/** 選択されたのリンクID */
+	public ArrayList<Integer> _selectedLinkId = new ArrayList<>();
+	/** 選択されたリンクで変形後の道路形状(xy座標) */
+	public ArrayList<ArrayList<Point2D>> _selectedTransformedPoint = new ArrayList<>();
+	
 	//http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticRoad&centerLngLat=136.9309671669116,35.15478942665804&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300
 	public DrawElasticRoad(HttpServletRequest request, HttpServletResponse response) {
 		// 必須パラメータがあるか.
@@ -97,6 +110,13 @@ public class DrawElasticRoad {
 		glueOuterRadius = Integer.parseInt(request.getParameter("glue_outer_radius"));
 		windowSize = new Point(glueOuterRadius*2, glueOuterRadius*2);
 		roadType = request.getParameter("roadType") == null  ? "car" : request.getParameter("roadType");
+		option = request.getParameter("option") == null ? "" : request.getParameter("option");
+		if(option.equals("vector")){	// 選択されたベクタの道路データを返す.
+			drawImage();
+			createVectorResponse(request, response);
+			return;
+		}
+		
 		isDrawPolygon = request.getParameter("isDrawPolygon") == null ? false : request.getParameter("isDrawPolygon").equals("true")?true:false;
 		try{
 			OutputStream out=response.getOutputStream();
@@ -108,6 +128,49 @@ public class DrawElasticRoad {
 			e.printStackTrace();
 		}
 
+	}
+	
+	/** ベクター用のレスポンス */
+	public void createVectorResponse(HttpServletRequest request, HttpServletResponse response){
+		// レスポンスの作成.
+		try{
+			response.setContentType("text/xml; charset=UTF-8");
+			PrintWriter out = response.getWriter();
+			out.println("<?xml version = \"1.0\" encoding = \"UTF-8\"?>");
+			out.println("<data>");
+			for(int i=0; i<_selectedLinkId.size(); i++){
+				out.println("<oneLink>");
+					out.println("<selectedLinkId>");
+						out.println(_selectedLinkId.get(i));
+					out.println("</selectedLinkId>");
+					out.println("<selectedTransformedPoint>");
+						for(int j=0; j<_selectedTransformedPoint.get(i).size(); j++){
+							out.print("<xy>");
+							out.print(_selectedTransformedPoint.get(i).get(j).getX());
+							out.print(",");
+							out.print(_selectedTransformedPoint.get(i).get(j).getY());
+							out.print("</xy>");
+						}
+					out.println("</selectedTransformedPoint>");
+					out.println("<selectedTransformedLngLat>");
+						for(int j=0; j<_selectedRoadPath.get(i).size(); j++){
+							out.println("<lngLat>");
+							out.print(_selectedRoadPath.get(i).get(j).getX());
+							out.print(",");
+							out.print(_selectedRoadPath.get(i).get(j).getY());
+							out.println("</lngLat>");
+						}
+					out.println("</selectedTransformedLngLat>");
+					out.println("<roadClazz>");
+					out.println(_selectedRoadClazz.get(i));
+					out.println("</roadClazz>");
+				out.println("</oneLink>");
+			}
+			out.println("</data>");
+			out.close();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
 	}
 	
 	
@@ -153,9 +216,20 @@ public class DrawElasticRoad {
 		// 道路の描画.
 		roadPath.addAll(osmRoadDataGeom._arc2);
 		clazzList.addAll(osmRoadDataGeom._clazz);
-//		System.out.println(osmRoadDataGeom._clazz);
-//		System.exit(0);
-//		paintElasticRoadData(osmRoadDataGeom._arc2, osmRoadDataGeom._clazz);
+		if(option.equals("vector")){
+			_selectedRoadPath = new ArrayList<>();
+			_selectedRoadClazz = new ArrayList<>();
+			_selectedLinkId = new ArrayList<>();
+			for(int i=0; i<osmRoadDataGeom._linkId.size(); i++){
+				_selectedRoadClazz.add(osmRoadDataGeom._clazz.get(i));
+				_selectedLinkId.add(osmRoadDataGeom._linkId.get(i));
+				ArrayList<Point2D> oneArc = new ArrayList<>();
+				for(int j=0; j<osmRoadDataGeom._arc2.get(i).size(); j++){
+					oneArc.add(osmRoadDataGeom._arc2.get(i).get(j));
+				}
+				_selectedRoadPath.add(oneArc);
+			}
+		}
 		//////////////////////////////////
 		// 鉄道データの取得.//////////////////
 		//////////////////////////////////
@@ -163,7 +237,6 @@ public class DrawElasticRoad {
 		// 鉄道の描画.
 		roadPath.addAll(osmRoadDataGeom._arc2);
 		clazzList.addAll(osmRoadDataGeom._clazz);
-//		paintElasticRoadData(osmRoadDataGeom._arc2, osmRoadDataGeom._clazz);
 		osmRoadDataGeom.endConnection();
 		
 		// 地下鉄の取得.
@@ -173,7 +246,6 @@ public class DrawElasticRoad {
 		osmLineDataGeom.endConnection();
 		roadPath.addAll(osmLineDataGeom._arc);
 		clazzList.addAll(osmLineDataGeom._clazz);
-//		paintElasticRoadData(osmLineDataGeom._arc, osmLineDataGeom._clazz);
 		
 		// その他の地形の描画.
 		if(isDrawPolygon){
@@ -205,10 +277,10 @@ public class DrawElasticRoad {
 		}
 
 		// 最後に描画.
-//		paintElasticRoadData(roadPath, clazzList);
 		// glue部分だけ描画
 		PaintGlueRoad paintGlueRoad = new PaintGlueRoad(centerLngLat, focusScale, contextScale, glueInnerRadius, glueOuterRadius, glueInnerRadiusMeter, glueOuterRadiusMeter, _graphics2d, _convertFocus, _convertContext, _contextMercatorConvert);
 		paintGlueRoad.paintElasticRoadData(roadPath, clazzList);
+		_selectedTransformedPoint = paintGlueRoad.transformedPoint;
 		
 		BasicStroke wideStroke = new BasicStroke(3);
 		_graphics2d.setStroke(wideStroke);

@@ -239,29 +239,63 @@ public class DrawMitinariSenbetuAlgorithm {
 			_selectedRoadClazz = new ArrayList<>();
 			_selectedLinkId = new ArrayList<>();
 			for(int i=0; i<mitinariDouroSenbetuAlgorithm._selectedLinkSet.size(); i++){
-				_selectedRoadClazz.add(mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).clazz);
-				_selectedLinkId.add(mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).linkId);
-				ArrayList<Point2D> oneArc = new ArrayList<>();
-				for(int j=0; j<mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).arc.size(); j++){
-					oneArc.add(mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).arc.get(j).getP1());
-					if(j==mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).arc.size()-1){
-						oneArc.add(mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).arc.get(j).getP2());
+				if(i==0){
+					_selectedRoadClazz.add(mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).clazz);
+					_selectedLinkId.add(mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).linkId);
+					ArrayList<Point2D> oneArc = new ArrayList<>();
+					for(int j=0; j<mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).arc.size(); j++){
+						oneArc.add(mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).arc.get(j).getP1());
+						if(j==mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).arc.size()-1){
+							oneArc.add(mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).arc.get(j).getP2());
+						}
+					}
+					_selectedRoadPath.add(oneArc);
+					continue;
+				}
+				for(int k=0; k<_selectedLinkId.size(); k++){// 重複しているリンク入れない.
+					if(mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).linkId ==_selectedLinkId.get(k)){
+						break;
+					}
+					if(k==_selectedLinkId.size()-1){
+						_selectedRoadClazz.add(mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).clazz);
+						_selectedLinkId.add(mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).linkId);
+						ArrayList<Point2D> oneArc = new ArrayList<>();
+						for(int j=0; j<mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).arc.size(); j++){
+							oneArc.add(mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).arc.get(j).getP1());
+							if(j==mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).arc.size()-1){
+								oneArc.add(mitinariDouroSenbetuAlgorithm._selectedLinkSet.get(i).arc.get(j).getP2());
+							}
+						}
+						_selectedRoadPath.add(oneArc);
 					}
 				}
-				_selectedRoadPath.add(oneArc);
+			}
+		}
+		
+		
+		OsmRoadDataGeom osmRoadDataGeom = new OsmRoadDataGeom();
+		osmRoadDataGeom.startConnection();
+		// 主要道路をすべて選択.
+		osmRoadDataGeom.insertOsmRoadData(_getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat, roadType, " (clazz >=13 and clazz <=16) ");
+		roadPath.addAll(osmRoadDataGeom._arc2);
+		clazzList.addAll(osmRoadDataGeom._clazz);
+		if(option.equals("vector")){	// 重複しているリンク入れない.  
+			for(int i=0; i<osmRoadDataGeom._link.size(); i++){
+				for(int j=0; j<_selectedLinkId.size(); j++){
+					if(osmRoadDataGeom._linkId.get(i).intValue() == _selectedLinkId.get(j).intValue()){
+						break;
+					}
+					if(j == _selectedLinkId.size()-1){
+						_selectedLinkId.add(osmRoadDataGeom._linkId.get(i));
+						_selectedRoadPath.add(osmRoadDataGeom._arc2.get(i));
+						_selectedRoadClazz.add(osmRoadDataGeom._clazz.get(i));
+					}
+				}
 			}
 		}
 		///////////////////////////////////////////////////
 		///////////////////////////////////////////////////
 		///////////////////////////////////////////////////
-		
-		OsmRoadDataGeom osmRoadDataGeom = new OsmRoadDataGeom();
-		osmRoadDataGeom.startConnection();
-		// 主要道路をすべて選択.
-//		osmRoadDataGeom.insertOsmRoadData(_getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat, roadType, " clazz <=12");
-//		roadPath.addAll(osmRoadDataGeom._arc2);
-//		clazzList.addAll(osmRoadDataGeom._clazz);
-
 		
 		//////////////////////////////////
 		// 高速道路を取得.///////////////
