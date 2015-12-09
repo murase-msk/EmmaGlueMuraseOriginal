@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 import org.postgis.PGgeometry;
 
+import src.DbConfig;
 import src.db.GeometryParsePostgres;
 import src.db.HandleDbTemplateSuper;
 
@@ -15,17 +16,17 @@ import src.db.HandleDbTemplateSuper;
  *
  */
 public class OsmLineDataGeom extends HandleDbTemplateSuper{
-	protected static final String DBNAME = "osm_all_db";	// Database Name
-//	protected static final String SCHEMA = "stroke";
-//	protected static final String TBNAME_POINT = "planet_osm_point";
-	protected static final String TBNAME_LINE = "planet_osm_line";
-//	protected static final String TBNAME_POLYGON = "planet_osm_polygon";
-//	protected static final String TBNAME_ROAD = "planet_osm_road";
-	protected static final String USER = "postgres";			// user name for DB.
-	protected static final String PASS = "usadasql";		// password for DB.
-	protected static final String URL = "rain2.elcom.nitech.ac.jp";
-	protected static final int PORT = 5432;
-	protected static final String DBURL = "jdbc:postgresql://"+URL+":"+PORT+"/" + DBNAME;
+//	protected static final String DBNAME = "osm_all_db";	// Database Name
+////	protected static final String SCHEMA = "stroke";
+////	protected static final String TBNAME_POINT = "planet_osm_point";
+//	protected static final String TBNAME_LINE = "planet_osm_line";
+////	protected static final String TBNAME_POLYGON = "planet_osm_polygon";
+////	protected static final String TBNAME_ROAD = "planet_osm_road";
+//	protected static final String USER = "postgres";			// user name for DB.
+//	protected static final String PASS = "usadasql";		// password for DB.
+//	protected static final String URL = "rain2.elcom.nitech.ac.jp";
+//	protected static final int PORT = 5432;
+//	protected static final String DBURL = "jdbc:postgresql://"+URL+":"+PORT+"/" + DBNAME;
 	
 	
 	// lineのデータ.
@@ -33,7 +34,7 @@ public class OsmLineDataGeom extends HandleDbTemplateSuper{
 	public ArrayList<Integer> _clazz;
 	
 	public OsmLineDataGeom() {
-		super(DBNAME, USER, PASS, DBURL, HandleDbTemplateSuper.POSTGRESJDBCDRIVER_STRING);
+		super(DbConfig.DBNAME_osm_all_db, DbConfig.USER, DbConfig.PASS, DbConfig.DBURL_osm_all_db, HandleDbTemplateSuper.POSTGRESJDBCDRIVER_STRING);
 	}
 	
 	/**
@@ -49,7 +50,7 @@ public class OsmLineDataGeom extends HandleDbTemplateSuper{
 					"select " +
 						"osm_id, name, st_transform(way, 4326) as way ,"+aColumnName+" " +
 					"from " +
-						""+TBNAME_LINE+" " +
+						""+DbConfig.TBNAME_planet_osm_line+" " +
 					"where " +
 						" st_intersects(" +
 							"way, "+

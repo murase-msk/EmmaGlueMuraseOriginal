@@ -9,6 +9,7 @@ import org.postgis.PGgeometry;
 
 import src.db.GeometryParsePostgres;
 import src.db.HandleDbTemplateSuper;
+import src.DbConfig;
 
 public class OsmPolygonDataGeom extends HandleDbTemplateSuper{
 //	protected static final String DBNAME = "osm_all_db";	// Database Name
@@ -24,17 +25,17 @@ public class OsmPolygonDataGeom extends HandleDbTemplateSuper{
 //	protected static final String DBURL = "jdbc:postgresql://"+URL+":"+PORT+"/" + DBNAME;
 
 
-	protected static final String DBNAME = "osm_morikoro_20151201";	// Database Name
-	protected static final String SCHEMA = "public";
-//	protected static final String TBNAME_POINT = "planet_osm_point";
-	protected static final String TBNAME_LINE = "planet_osm_line";
-	protected static final String TBNAME_POLYGON = "planet_osm_polygon";
+//	protected static final String DBNAME = "osm_morikoro_20151201";	// Database Name
+//	protected static final String SCHEMA = "public";
+////	protected static final String TBNAME_POINT = "planet_osm_point";
+//	protected static final String TBNAME_LINE = "planet_osm_line";
+//	protected static final String TBNAME_POLYGON = "planet_osm_polygon";
 //	protected static final String TBNAME_ROAD = "planet_osm_road";
-	protected static final String USER = "postgres";			// user name for DB.
-	protected static final String PASS = "usadasql";		// password for DB.
-	protected static final String URL = "rain2.elcom.nitech.ac.jp";
-	protected static final int PORT = 5432;
-	protected static final String DBURL = "jdbc:postgresql://"+URL+":"+PORT+"/" + DBNAME;
+//	protected static final String USER = "postgres";			// user name for DB.
+//	protected static final String PASS = "usadasql";		// password for DB.
+//	protected static final String URL = "rain2.elcom.nitech.ac.jp";
+//	protected static final int PORT = 5432;
+//	protected static final String DBURL = "jdbc:postgresql://"+URL+":"+PORT+"/" + DBNAME;
 
 	
 	
@@ -44,7 +45,7 @@ public class OsmPolygonDataGeom extends HandleDbTemplateSuper{
 	public ArrayList<ArrayList<Point2D>> _facilityLocation = new ArrayList<>();
 	
 	public OsmPolygonDataGeom(){
-		super(DBNAME, USER, PASS, DBURL, HandleDbTemplateSuper.POSTGRESJDBCDRIVER_STRING);
+		super(DbConfig.DBNAME_osm_morikoro_20151201, DbConfig.USER, DbConfig.PASS, DbConfig.DBURL_osm_morikoro_20151201, HandleDbTemplateSuper.POSTGRESJDBCDRIVER_STRING);
 		_facilityId = new ArrayList<>();
 		_facilityName = new ArrayList<>();
 		_facilityType = new ArrayList<>();
@@ -59,7 +60,7 @@ public class OsmPolygonDataGeom extends HandleDbTemplateSuper{
 					"select " +
 						"osm_id, name, st_transform(way, 4326) as way, \""+aColumnName+"\" " +
 					"from " +
-						""+SCHEMA+"."+TBNAME_POLYGON+" " +
+						""+DbConfig.SCHEMA_public+"."+DbConfig.TBNAME_planet_osm_polygon+" " +
 					"where " +
 						" st_intersects(" +
 							"st_transform("+
@@ -96,7 +97,7 @@ public class OsmPolygonDataGeom extends HandleDbTemplateSuper{
 					"select " +
 						"osm_id, name, st_transform(way, 4326) as way, \""+aColumnName+"\" " +
 					"from " +
-						""+SCHEMA+"."+TBNAME_LINE+" " +
+						""+DbConfig.SCHEMA_public+"."+DbConfig.TBNAME_planet_osm_line+" " +
 					"where " +
 						" st_intersects(" +
 							"st_transform("+

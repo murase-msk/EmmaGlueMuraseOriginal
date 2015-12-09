@@ -11,6 +11,7 @@ import org.apache.naming.java.javaURLContextFactory;
 import org.postgis.PGgeometry;
 
 import servlet.DrawElasticRoad;
+import src.DbConfig;
 import src.db.GeometryParsePostgres;
 import src.db.HandleDbTemplateSuper;
 import src.coordinate.*;
@@ -21,12 +22,6 @@ import src.coordinate.*;
  *
  */
 public class OsmRoadDataGeom extends HandleDbTemplateSuper {
-	private static final String DBNAME = "osm_road_db";	// Database Name
-	private static final String USER = "postgres";			// user name for DB.
-	private static final String PASS = "usadasql";		// password for DB.
-	private static final String URL = "rain2.elcom.nitech.ac.jp";
-	private static final int PORT = 5432;
-	private static final String DBURL = "jdbc:postgresql://"+URL+":"+PORT+"/" + DBNAME;
 	
 	/** リンクID */
 	public ArrayList<Integer> _linkId;
@@ -62,7 +57,7 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 	public ArrayList<ArrayList<Point2D>> __arc2;
 	
 	public OsmRoadDataGeom(){
-		super(DBNAME, USER, PASS, DBURL, HandleDbTemplateSuper.POSTGRESJDBCDRIVER_STRING);
+		super(DbConfig.DBNAME_osm_road_db, DbConfig.USER, DbConfig.PASS, DbConfig.DBURL_osm_road_db, HandleDbTemplateSuper.POSTGRESJDBCDRIVER_STRING);
 	}
 	
 	/**
@@ -78,8 +73,8 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 		_clazz = new ArrayList<>();
 		_arc = new ArrayList<>();
 		_arc2 = new ArrayList<>();
-		String table = (aRoadType.equals("all") ? "osm_japan_car_bike_foot_2po_4pgr" : "osm_japan_car_2po_4pgr");
-		table = aRoadType.equals("rail") ? "osm_japan_rail_2po_4pgr": table;
+		String table = (aRoadType.equals("all") ? DbConfig.TBNAME_osm_japan_car_bike_foot_2po_4pgr : DbConfig.TBNAME_osm_japan_car_2po_4pgr);
+		table = aRoadType.equals("rail") ? DbConfig.TBNAME_osm_japan_rail_2po_4pgr: table;
 		String constraint = aConstraint.equals("")? "": " and " + aConstraint;
 		try{
 			String statement;
@@ -137,7 +132,7 @@ public class OsmRoadDataGeom extends HandleDbTemplateSuper {
 			// SRID=4326.
 			statement = "select " +
 					" id, osm_name,osm_source_id, osm_target_id, clazz, source, target, km, cost, x1, y1, x2, y2, geom_way" +
-					" from osm_japan_car_2po_4pgr " +
+					" from "+DbConfig.TBNAME_osm_japan_car_2po_4pgr+" " +
 					" where" +
 					" st_intersects(" +
 						"st_transform(" +

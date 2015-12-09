@@ -257,6 +257,9 @@ public class PaintGlueRoad {
 		){
 		// 道路クラスごとに描画.
 		// 最初に描画する道路が後ろに来る.
+		int mainRoadEdge = 6;//8
+		int mainRoadIn = 5;//7
+		
        for(ArrayList<Point2D> line: wideRedDashPath){
             float[] dash = { 2.f, 2.f };
             paintPath(line, 3, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(252, 127, 111), (float) 1., dash, (float) 0.);
@@ -280,8 +283,8 @@ public class PaintGlueRoad {
             paintPath(line, 3, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(237,237,237));// 中の線.
         }
         for(ArrayList<Point2D> line: grayPath){
-            paintPath(line, 8, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(189,189,188));// 枠.
-            paintPath(line, 7, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(204,204,204));// 中の線.
+            paintPath(line, mainRoadEdge, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(189,189,188));// 枠.
+            paintPath(line, mainRoadIn, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(204,204,204));// 中の線.
         }
         for(ArrayList<Point2D> line: narrowWhitePath){
             paintPath(line, 4, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(189,189,188));// 枠.
@@ -289,24 +292,24 @@ public class PaintGlueRoad {
         }
 	        
 		for(ArrayList<Point2D> whiteLine: whitePath){
-			paintPath(whiteLine, 8, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(189,189,188));// 枠.
-			paintPath(whiteLine, 7, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(255,255,255));// 中の線.
+			paintPath(whiteLine, mainRoadEdge, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(189,189,188));// 枠.
+			paintPath(whiteLine, mainRoadIn, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(255,255,255));// 中の線.
 		}
 		for(ArrayList<Point2D>yellowLine: yellowPath){
-			paintPath(yellowLine, 8, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(153,153,0));
-			paintPath(yellowLine, 7, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(248,248,186));
+			paintPath(yellowLine, mainRoadEdge, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(153,153,0));
+			paintPath(yellowLine, mainRoadIn, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(248,248,186));
 		}
 		for(ArrayList<Point2D>orangeLine: orangePath){
-			paintPath(orangeLine, 8, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(204,102,0));
-			paintPath(orangeLine, 7, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(248,214,170));
+			paintPath(orangeLine, mainRoadEdge, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(204,102,0));
+			paintPath(orangeLine, mainRoadIn, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(248,214,170));
 		}
 		for(ArrayList<Point2D>redLine: redPath){
-			paintPath(redLine, 8, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(211,147,148));
-			paintPath(redLine, 7, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(220,158,158));
+			paintPath(redLine, mainRoadEdge, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(211,147,148));
+			paintPath(redLine, mainRoadIn, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(220,158,158));
 		}
 		for(ArrayList<Point2D>greenLine: greenPath){
-			paintPath(greenLine, 8, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(0,153,0));
-			paintPath(greenLine, 7, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(148,211,148));
+			paintPath(greenLine, mainRoadEdge, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(0,153,0));
+			paintPath(greenLine, mainRoadIn, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(148,211,148));
 		}
 		for(ArrayList<Point2D>railLine: railPath){
 			float[] dash = { 12.f, 12.f };
@@ -319,8 +322,8 @@ public class PaintGlueRoad {
 			paintPath(subwayLine, 2, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(153, 153, 153), (float) 1., dash, (float) 0.);
 		}
 		for(ArrayList<Point2D>blueLine: bluePath){
-			paintPath(blueLine, 8, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(40,40,40));
-			paintPath(blueLine, 7, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(137,163,202));
+			paintPath(blueLine, mainRoadEdge, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, new Color(40,40,40));
+			paintPath(blueLine, mainRoadIn, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, new Color(137,163,202));
 		}
 	}
 	

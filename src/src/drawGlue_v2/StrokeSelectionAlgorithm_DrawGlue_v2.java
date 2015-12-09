@@ -21,7 +21,7 @@ public class StrokeSelectionAlgorithm_DrawGlue_v2 {
 //	/** 地図の大きさ */
 //	private Point windowSize = new Point(700, 700);
 	/** 初期の緯度経度Point2D形式 */
-	private  Point2D centerLngLat = new Point2D.Double(136.9309671669116, 35.15478942665804);// 鶴舞公園.
+	private  Point2D centerLngLat;// 鶴舞公園.
 //	/** focusのスケール */
 //	private int focusScale = 17;
 //	/** contextのスケール */
@@ -84,16 +84,16 @@ public class StrokeSelectionAlgorithm_DrawGlue_v2 {
 		osmOuterStrokeDataGeom.endConnection();
 		// 描画数決定.
 		double glueArea = Math.PI*glueOuterRadius*glueOuterRadius-Math.PI*glueInnerRadius*glueInnerRadius;	// glue領域の面積.
-		double oneStrokeArea = (glueInnerRadius)*8;				// ストローク1本あたりの推定面積.
-		int drawStrokeNum = (int)(glueArea/oneStrokeArea*0.3);					// glue領域におけるストロークの割合をα(=0.3)割くらいになるようにストローク数を設定.
+		double oneStrokeArea = (glueOuterRadius)*8;				// ストローク1本あたりの推定面積.
+		int drawStrokeNum = (int)((glueArea/oneStrokeArea)*0.4);					// glue領域におけるストロークの割合をα(=0.3)割くらいになるようにストローク数を設定.
 		int innerEdgeDrawNum = drawStrokeNum/2;
 		int outerEdgeDrawNum = drawStrokeNum/2;
 		innerEdgeDrawNum = innerEdgeDrawNum > osmInnerStrokeDataGeom._strokeId.size() ? osmInnerStrokeDataGeom._strokeId.size() : innerEdgeDrawNum;
 		outerEdgeDrawNum = outerEdgeDrawNum > osmOuterStrokeDataGeom._strokeId.size() ? osmOuterStrokeDataGeom._strokeId.size() : outerEdgeDrawNum;
-		System.out.println("outer  "+glueOuterRadius+""+"  inner  "+glueInnerRadius);
-		System.out.println("glueArea"+glueArea);
-		System.out.println("oneStrokeArea"+oneStrokeArea);
-		System.out.println("drawStrokeNum"+drawStrokeNum);
+//		System.out.println("outer  "+glueOuterRadius+""+"  inner  "+glueInnerRadius);
+//		System.out.println("glueArea"+glueArea);
+//		System.out.println("oneStrokeArea"+oneStrokeArea);
+//		System.out.println("drawStrokeNum"+drawStrokeNum);
 		// innner側の選択.
 		ArrayList<Integer> innerOuterStrokeId = new ArrayList<>();
 		for(int i=0; i<innerEdgeDrawNum; i++){	// 長いストロークn本.

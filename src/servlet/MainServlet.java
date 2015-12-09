@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import servlet.sample.DrawSimpleRoad;
 import servlet.sample.DrawSimplifiedStroke;
 import servlet.sample.Test;
+import servlet.sample.HelloWorld;
 
 
 
@@ -74,6 +75,9 @@ public class MainServlet extends HttpServlet{
 			break;
 		case "Test":
 			new Test(request, response);
+			break;
+		case "HelloWorld":
+			new HelloWorld(request, response);
 			break;
 		default:
 			ErrorMsg.errorResponse(request, response, "typeパラメータの値が正しくありません");

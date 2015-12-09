@@ -11,6 +11,7 @@ import org.postgis.PGgeometry;
 
 import src.db.GeometryParsePostgres;
 import src.db.HandleDbTemplateSuper;
+import src.DbConfig;
 
 /**
  * ストロークテーブルを使ったデータ処理
@@ -19,21 +20,12 @@ import src.db.HandleDbTemplateSuper;
  */
 public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 	
-	private static final String DBNAME = "osm_road_db";	// Database Name
-	private static final String SCHEMA = "stroke_v2";
-	private static final String TBNAME = "stroke_table";
-	private static final String TBNAME2 = "flatted_stroke_table";
-	private static final String USER = "postgres";			// user name for DB.
-	private static final String PASS = "usadasql";		// password for DB.
-	private static final String URL = "rain2.elcom.nitech.ac.jp";
-	private static final int PORT = 5432;
-	private static final String DBURL = "jdbc:postgresql://"+URL+":"+PORT+"/" + DBNAME;
 	
 	/** ストロークID */
 	public ArrayList<Integer> _strokeId = new ArrayList<>();
 	
 	public OsmStrokeDataGeom() {
-		super(DBNAME, USER, PASS, DBURL, HandleDbTemplateSuper.POSTGRESJDBCDRIVER_STRING);
+		super(DbConfig.DBNAME_osm_road_db, DbConfig.USER, DbConfig.PASS, DbConfig.DBURL_osm_road_db, HandleDbTemplateSuper.POSTGRESJDBCDRIVER_STRING);
 	}
 	
 	// 切り出さずにそのままのストローク.
@@ -73,7 +65,7 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 					" id, length, stroke_clazz, "+
 					" flatted_arc_series, " +
 					" st_asText(flatted_arc_series) as strokeString" +
-					" from "+SCHEMA+"."+TBNAME2+" " +
+					" from "+DbConfig.SCHEMA_stroke+"."+DbConfig.TBNAME_flatted_stroke_table+" " +
 					" where" +
 					" st_intersects(" +
 						"flatted_arc_series, "+
@@ -127,7 +119,7 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 					" flatted_arc_series, " +
 					" st_asText(flatted_arc_series) as strokeString, " +
 					" st_envelope(flatted_arc_series) as MBR "+
-					" from "+SCHEMA+"."+TBNAME2+" " +
+					" from "+DbConfig.SCHEMA_stroke+"."+DbConfig.TBNAME_flatted_stroke_table+" " +
 					" where" +
 					" st_intersects(" +
 						"flatted_arc_series, "+
@@ -281,7 +273,7 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 //									aUpperLeftLngLat.getX()+" "+aLowerRightLngLat.getY()+","+
 //									aUpperLeftLngLat.getX()+" "+aUpperLeftLngLat.getY()+
 //								"))'," + HandleDbTemplateSuper.WGS84_EPSG_CODE+""+ "),  flatted_arc_series)) as geojson" +
-					" from "+SCHEMA+"."+TBNAME2+" " +
+					" from "+DbConfig.SCHEMA_stroke+"."+DbConfig.TBNAME_flatted_stroke_table+" " +
 					" where" +
 					" st_intersects(" +
 						"st_polygonFromText(" +
@@ -337,7 +329,7 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 						" id, length, stroke_clazz, "+
 						" flatted_arc_series, " +
 						" st_asText(flatted_arc_series) as strokeString" +
-					" from "+SCHEMA+"."+TBNAME2+" " +
+					" from "+DbConfig.SCHEMA_stroke+"."+DbConfig.TBNAME_flatted_stroke_table+" " +
 					" where " +
 						" st_crosses("+
 							"st_transform("+
@@ -448,7 +440,7 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 	public ArrayList<ArrayList<Line2D>> getTopN(int topN){
 		ArrayList<ArrayList<Line2D>> top10 = new ArrayList<>();
 		try{
-			String stmt = "select flatted_arc_series from "+SCHEMA+"."+TBNAME2 + " order by length desc limit "+topN+"";
+			String stmt = "select flatted_arc_series from "+DbConfig.SCHEMA_stroke+"."+DbConfig.TBNAME_flatted_stroke_table+" order by length desc limit "+topN+"";
 			ResultSet rSet = execute(stmt);
 			while(rSet.next()){
 				top10.add(GeometryParsePostgres.getLineStringMultiLine((PGgeometry)rSet.getObject(1)));
@@ -492,7 +484,7 @@ public class OsmStrokeDataGeom extends HandleDbTemplateSuper{
 	public String testStrokeString(int aStrokeId){
 		String wktString = "";
 		try{
-			String stmt = "select st_asText(flatted_arc_series) from "+SCHEMA+"."+TBNAME2+" where id= "+aStrokeId+""+"";
+			String stmt = "select st_asText(flatted_arc_series) from "+DbConfig.SCHEMA_stroke+"."+DbConfig.TBNAME_flatted_stroke_table+" where id= "+aStrokeId+""+"";
 			System.out.println(stmt);
 			ResultSet rs = execute(stmt);
 			while(rs.next()){
