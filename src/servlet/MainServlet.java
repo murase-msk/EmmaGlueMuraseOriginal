@@ -46,6 +46,8 @@ public class MainServlet extends HttpServlet{
 			ErrorMsg.errorResponse(request, response, "typeパラメータがありません");
 			return;
 		}
+		long start = System.currentTimeMillis();
+
 		
 		type = request.getParameter("type");
 		switch(type){
@@ -83,6 +85,12 @@ public class MainServlet extends HttpServlet{
 			ErrorMsg.errorResponse(request, response, "typeパラメータの値が正しくありません");
 			return;
 		}
+		
+		//計測したい処理を記述
+
+		long end = System.currentTimeMillis();
+		System.out.println((end - start)  + "ms");
+
 	}
 
 	/**

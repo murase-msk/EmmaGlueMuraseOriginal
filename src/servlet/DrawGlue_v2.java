@@ -17,7 +17,6 @@ import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
 
 import src.QuickSort2;
 import src.coordinate.ConvertLngLatXyCoordinate;
@@ -29,6 +28,7 @@ import src.db.getData.OsmStrokeDataGeom;
 import src.drawGlue_v2.StrokeSelectionAlgorithm_DrawGlue_v2;
 import src.drawMitinariSenbetuAlgorithm.*;
 import src.paint.PaintGlueRoad;
+import src.coordinate.ConvertElasticPointGlue;
 
 /**
  * focus,contextから一定数の重要なストロークを取り出し，描画する
@@ -119,6 +119,8 @@ public class DrawGlue_v2 {
 		}else if(request.getParameter("option").equals("vector")){	// 選択されたベクタの道路データを返す.
 			drawImage();
 			createVectorResponse(request, response);
+		}else if(request.getParameter("option").equals("vector2")){
+			createVectorResponse2(request, response);
 		}else{
 			
 		}
@@ -167,6 +169,91 @@ public class DrawGlue_v2 {
 		}
 	}
 	
+	/** ベクター用のレスポンス */
+	public void createVectorResponse2(HttpServletRequest request, HttpServletResponse response){
+		createConvertUtility();
+		// 描画する道路などのデータ.
+		ArrayList<ArrayList<Point2D>> roadPath = new ArrayList<>();
+		// その時の道路クラス.
+		ArrayList<Integer> clazzList = new ArrayList<>();
+		
+		////////////////////////////////////////////////////////////////
+		//////////////道路選別///////////////////////////////////////////
+		////////////////////////////////////////////////////////////////
+		StrokeSelectionAlgorithm_DrawGlue_v2 strokeSelectionAlgorithm = new StrokeSelectionAlgorithm_DrawGlue_v2(centerLngLat, glueInnerRadius, glueOuterRadius, glueInnerRadiusMeter, glueOuterRadiusMeter, _graphics2d);
+		roadPath.addAll(strokeSelectionAlgorithm.roadPath);
+		clazzList.addAll(strokeSelectionAlgorithm.clazzList);
+		_selectedRoadPath = strokeSelectionAlgorithm.roadPath;
+		_selectedRoadClazz = strokeSelectionAlgorithm.clazzList;
+		_selectedStrokeId = strokeSelectionAlgorithm.strokeId;
+		
+		OsmRoadDataGeom osmRoadDataGeom = new OsmRoadDataGeom();
+		osmRoadDataGeom.startConnection();
+		//////////////////////////////////
+		// 高速道路を取得.///////////////
+		//////////////////////////////////
+		osmRoadDataGeom.insertOsmRoadData(_getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat, "car", " clazz <=12");
+		roadPath.addAll(osmRoadDataGeom._arc2);
+		clazzList.addAll(osmRoadDataGeom._clazz);
+		//////////////////////////////////
+		// 鉄道データの取得.//////////////////
+		//////////////////////////////////
+		osmRoadDataGeom.insertOsmRoadData(_getLngLatOsmContext._upperLeftLngLat, _getLngLatOsmContext._lowerRightLngLat, "rail", "");
+		roadPath.addAll(osmRoadDataGeom._arc2);
+		clazzList.addAll(osmRoadDataGeom._clazz);
+		osmRoadDataGeom.endConnection();
+		
+		ConvertElasticPoints convertGlue = new ConvertElasticPoints(centerLngLat, focusScale, contextScale, glueInnerRadius, glueOuterRadius, windowSize);
+		_selectedTransformedPoint = new ArrayList<>();
+		for(int i=0; i<roadPath.size(); i++){
+			_selectedTransformedPoint.add(convertGlue.convertTransformedPoints(roadPath.get(i)));
+		}
+		
+		// レスポンスの作成.
+		try{
+			response.setContentType("text/json; charset=UTF-8");
+			PrintWriter out = response.getWriter();
+			out.println("{\"data\":[");
+			for(int i=0; i<_selectedStrokeId.size(); i++){
+				out.println("\t{");
+					out.print("\t\t\"selectedStrokeId\":");
+					out.println(_selectedStrokeId.get(i)+",");
+						out.println("\t\t\"selectedTransformedPoint\":[");
+						for(int j=0; j<_selectedTransformedPoint.get(i).size(); j++){
+							out.print("{");
+							out.print("\"x\":");
+							out.print(_selectedTransformedPoint.get(i).get(j).getX());
+							out.print(",\"y\":");
+							out.print(_selectedTransformedPoint.get(i).get(j).getY());
+							out.print("}");
+							if(j!=_selectedTransformedPoint.get(i).size()-1){
+								out.print(",");
+							}
+						}
+					out.println("],");
+//					out.println("<selectedTransformedLngLat>");
+//					for(int j=0; j<_selectedRoadPath.get(i).size(); j++){
+//						out.println("<lngLat>");
+//						out.print(_selectedRoadPath.get(i).get(j).getX());
+//						out.print(",");
+//						out.print(_selectedRoadPath.get(i).get(j).getY());
+//						out.println("</lngLat>");
+//					}
+//					out.println("</selectedTransformedLngLat>");
+				out.print("\t\t\"roadClazz\":");
+				out.println(_selectedRoadClazz.get(i));
+				out.println("\t}");
+				if(i!=_selectedStrokeId.size()-1){
+					out.println(",");
+				}
+			}
+			out.println("]}");
+			out.close();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * 道路データの取得しbufferedimageの作成
 	 * @return
@@ -180,20 +267,7 @@ public class DrawGlue_v2 {
 		// アンチエイリアス設定：遅いときは次の行をコメントアウトする.
 		_graphics2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
-		//focus用の緯度経度xy変換
-		_getLngLatOsmFocus = new GetLngLatOsm(centerLngLat, focusScale, windowSize);
-		_convertFocus = new ConvertLngLatXyCoordinate((Point2D.Double)_getLngLatOsmFocus._upperLeftLngLat,
-				(Point2D.Double)_getLngLatOsmFocus._lowerRightLngLat, windowSize);
-		//context用の緯度経度xy変換
-		_getLngLatOsmContext = new GetLngLatOsm(centerLngLat, contextScale, windowSize);
-		_convertContext = new ConvertLngLatXyCoordinate((Point2D.Double)_getLngLatOsmContext._upperLeftLngLat,
-				(Point2D.Double)_getLngLatOsmContext._lowerRightLngLat, windowSize);
-		glueInnerRadiusMeter = glueInnerRadius*_convertFocus.meterPerPixel.getX();
-		glueOuterRadiusMeter = glueOuterRadius*_convertContext.meterPerPixel.getX();
-		// contextでのメルカトル座標系xy変換.
-		_contextMercatorConvert = new ConvertMercatorXyCoordinate(
-				LngLatMercatorUtility.ConvertLngLatToMercator((Point2D.Double)_getLngLatOsmContext._upperLeftLngLat), 
-				LngLatMercatorUtility.ConvertLngLatToMercator((Point2D.Double)_getLngLatOsmContext._lowerRightLngLat), windowSize);
+		createConvertUtility();
 		
 		// 描画する道路などのデータ.
 		ArrayList<ArrayList<Point2D>> roadPath = new ArrayList<>();
@@ -250,5 +324,25 @@ public class DrawGlue_v2 {
 		_graphics2d.drawOval(windowSize.x/2-glueOuterRadius, windowSize.x/2-glueOuterRadius, glueOuterRadius*2, glueOuterRadius*2);
 		
 		return bfImage;
+	}
+	
+	/**
+	 * 
+	 */
+	public void createConvertUtility(){
+		//focus用の緯度経度xy変換
+		_getLngLatOsmFocus = new GetLngLatOsm(centerLngLat, focusScale, windowSize);
+		_convertFocus = new ConvertLngLatXyCoordinate((Point2D.Double)_getLngLatOsmFocus._upperLeftLngLat,
+				(Point2D.Double)_getLngLatOsmFocus._lowerRightLngLat, windowSize);
+		//context用の緯度経度xy変換
+		_getLngLatOsmContext = new GetLngLatOsm(centerLngLat, contextScale, windowSize);
+		_convertContext = new ConvertLngLatXyCoordinate((Point2D.Double)_getLngLatOsmContext._upperLeftLngLat,
+				(Point2D.Double)_getLngLatOsmContext._lowerRightLngLat, windowSize);
+		glueInnerRadiusMeter = glueInnerRadius*_convertFocus.meterPerPixel.getX();
+		glueOuterRadiusMeter = glueOuterRadius*_convertContext.meterPerPixel.getX();
+		// contextでのメルカトル座標系xy変換.
+		_contextMercatorConvert = new ConvertMercatorXyCoordinate(
+				LngLatMercatorUtility.ConvertLngLatToMercator((Point2D.Double)_getLngLatOsmContext._upperLeftLngLat), 
+				LngLatMercatorUtility.ConvertLngLatToMercator((Point2D.Double)_getLngLatOsmContext._lowerRightLngLat), windowSize);
 	}
 }

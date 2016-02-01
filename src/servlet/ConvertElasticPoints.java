@@ -17,6 +17,7 @@ import src.coordinate.ConvertMercatorXyCoordinate;
 import src.coordinate.GetLngLatOsm;
 import src.coordinate.ConvertElasticPointGlue;
 import src.coordinate.LngLatMercatorUtility;
+import sun.launcher.resources.launcher;
 
 /**
  * 点(複数)をglueに描画できる形に変換する
@@ -76,7 +77,6 @@ public class ConvertElasticPoints {
 		for(int i=0; i<pointString.length; i+=2){
 			points.add(new Point2D.Double(Double.parseDouble(pointString[i]), Double.parseDouble(pointString[i+1])));
 		}
-		
 		centerLngLat = new Point2D.Double(
 				Double.parseDouble(request.getParameter("centerLngLat").split(",")[0]), 
 				Double.parseDouble(request.getParameter("centerLngLat").split(",")[1]));
@@ -86,31 +86,8 @@ public class ConvertElasticPoints {
 		glueOuterRadius = Integer.parseInt(request.getParameter("glue_outer_radius"));
 		windowSize = new Point(glueOuterRadius*2, glueOuterRadius*2);
 		
-		
-		//focus用の緯度経度xy変換
-		_getLngLatOsmFocus = new GetLngLatOsm(centerLngLat, focusScale, windowSize);
-		_convertFocus = new ConvertLngLatXyCoordinate((Point2D.Double)_getLngLatOsmFocus._upperLeftLngLat,
-				(Point2D.Double)_getLngLatOsmFocus._lowerRightLngLat, windowSize);
-		//context用の緯度経度xy変換
-		_getLngLatOsmContext = new GetLngLatOsm(centerLngLat, contextScale, windowSize);
-		_convertContext = new ConvertLngLatXyCoordinate((Point2D.Double)_getLngLatOsmContext._upperLeftLngLat,
-				(Point2D.Double)_getLngLatOsmContext._lowerRightLngLat, windowSize);
-		glueInnerRadiusMeter = glueInnerRadius*_convertFocus.meterPerPixel.getX();
-		glueOuterRadiusMeter = glueOuterRadius*_convertContext.meterPerPixel.getX();
-		// contextでのメルカトル座標系xy変換.
-		_contextMercatorConvert = new ConvertMercatorXyCoordinate(
-				LngLatMercatorUtility.ConvertLngLatToMercator((Point2D.Double)_getLngLatOsmContext._upperLeftLngLat), 
-				LngLatMercatorUtility.ConvertLngLatToMercator((Point2D.Double)_getLngLatOsmContext._lowerRightLngLat), windowSize);
-		
-		ConvertElasticPointGlue convertGlue = new ConvertElasticPointGlue(glueInnerRadius, glueOuterRadius, glueInnerRadiusMeter, glueOuterRadiusMeter,
-				focusScale, contextScale, centerLngLat, _convertFocus, _convertContext, _contextMercatorConvert);
-		
-		// 変換.
-		ArrayList<Point2D> convertedPoints= new ArrayList<>();
-		for(int i=0; i<points.size(); i++){
-			convertedPoints.add(convertGlue.convertLngLatGlueXy(points.get(i)));
-		}
-		
+
+		ArrayList<Point2D> convertedPoints = convertTransformedPoints(points);
 		
 		
 		// レスポンスの作成.
@@ -139,14 +116,47 @@ public class ConvertElasticPoints {
 		}catch(IOException e){
 			e.printStackTrace();
 		}
-
-		
-		
 	}
 	
+	public ConvertElasticPoints(Point2D aCenterLngLat, int aFocusScale, int aContextScale, 
+			int aGlueInnerRadius, int aGlueOuterRadius, Point aWindowSize){
+		centerLngLat = aCenterLngLat;
+		focusScale = aFocusScale;
+		contextScale = aContextScale;
+		glueInnerRadius = aGlueInnerRadius;
+		glueOuterRadius = aGlueOuterRadius;
+		windowSize = aWindowSize;
+	}
 	
-	public void convertTransformedPoints(){
+	/**
+	 * glue用の座標に変換
+	 * @param points
+	 */
+	public ArrayList<Point2D> convertTransformedPoints(ArrayList<Point2D> points){
+		//focus用の緯度経度xy変換
+		_getLngLatOsmFocus = new GetLngLatOsm(centerLngLat, focusScale, windowSize);
+		_convertFocus = new ConvertLngLatXyCoordinate((Point2D.Double)_getLngLatOsmFocus._upperLeftLngLat,
+				(Point2D.Double)_getLngLatOsmFocus._lowerRightLngLat, windowSize);
+		//context用の緯度経度xy変換
+		_getLngLatOsmContext = new GetLngLatOsm(centerLngLat, contextScale, windowSize);
+		_convertContext = new ConvertLngLatXyCoordinate((Point2D.Double)_getLngLatOsmContext._upperLeftLngLat,
+				(Point2D.Double)_getLngLatOsmContext._lowerRightLngLat, windowSize);
+		glueInnerRadiusMeter = glueInnerRadius*_convertFocus.meterPerPixel.getX();
+		glueOuterRadiusMeter = glueOuterRadius*_convertContext.meterPerPixel.getX();
+		// contextでのメルカトル座標系xy変換.
+		_contextMercatorConvert = new ConvertMercatorXyCoordinate(
+				LngLatMercatorUtility.ConvertLngLatToMercator((Point2D.Double)_getLngLatOsmContext._upperLeftLngLat), 
+				LngLatMercatorUtility.ConvertLngLatToMercator((Point2D.Double)_getLngLatOsmContext._lowerRightLngLat), windowSize);
 		
+		ConvertElasticPointGlue convertGlue = new ConvertElasticPointGlue(glueInnerRadius, glueOuterRadius, glueInnerRadiusMeter, glueOuterRadiusMeter,
+				focusScale, contextScale, centerLngLat, _convertFocus, _convertContext, _contextMercatorConvert);
+		
+		// 変換.
+		ArrayList<Point2D> convertedPoints= new ArrayList<>();
+		for(int i=0; i<points.size(); i++){
+			convertedPoints.add(convertGlue.convertLngLatGlueXy(points.get(i)));
+		}
+		return convertedPoints;
 	}
 	
 	

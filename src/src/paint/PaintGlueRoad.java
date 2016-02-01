@@ -257,8 +257,8 @@ public class PaintGlueRoad {
 		){
 		// 道路クラスごとに描画.
 		// 最初に描画する道路が後ろに来る.
-		int mainRoadEdge = 6;//8
-		int mainRoadIn = 5;//7
+		int mainRoadEdge = 8;//6;//8
+		int mainRoadIn = 7;//5;//7
 		
        for(ArrayList<Point2D> line: wideRedDashPath){
             float[] dash = { 2.f, 2.f };
