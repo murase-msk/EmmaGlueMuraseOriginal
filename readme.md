@@ -5,28 +5,28 @@ OSM版glueサーバ
 詳細
 <http://rain.elcom.nitech.ac.jp/tsg-wiki/index.php?GlueServerOsm>
 
-* <http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=ConvertElasticPoints&centerLngLat=136.9288336363183,35.158167325045824&points=136.92588320639172,35.15937778672364,136.9266127672479,35.15893921573326,136.9270526495242,35.15869361494546,136.92767492201676,35.15823749722958,136.92857614424028,35.15764103174276,136.92920914557283,35.15704456188256,136.92994943525997,35.15660597831222,136.93057170775256,35.15601827262135,136.93055025008164,35.156000729102885&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300>
+* <http://rain2.elcom.nitech.ac.jp:8080/EmmaGlueMuraseOriginal/MainServlet?type=ConvertElasticPoints&centerLngLat=136.9288336363183,35.158167325045824&points=136.92588320639172,35.15937778672364,136.9266127672479,35.15893921573326,136.9270526495242,35.15869361494546,136.92767492201676,35.15823749722958,136.92857614424028,35.15764103174276,136.92920914557283,35.15704456188256,136.92994943525997,35.15660597831222,136.93057170775256,35.15601827262135,136.93055025008164,35.156000729102885&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300>
 	- 緯度経度からglue上のxy座標に変換
 
-* <http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawGlue_v2&centerLngLat=136.9369411468506,35.15805494125627&focus_zoom_level=16&context_zoom_level=15&glue_inner_radius=125&glue_outer_radius=200&roadType=car>
+* <http://rain2.elcom.nitech.ac.jp:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawGlue_v2&centerLngLat=136.9369411468506,35.15805494125627&focus_zoom_level=16&context_zoom_level=15&glue_inner_radius=125&glue_outer_radius=200&roadType=car>
 	- 提案システムのglue
 
-* <http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawMitinariSenbetuAlgorithm&centerLngLat=136.9365119934082,35.158405798185974&focus_zoom_level=16&context_zoom_level=15&glue_inner_radius=125&glue_outer_radius=200&roadType=car>
+* <http://rain2.elcom.nitech.ac.jp:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawMitinariSenbetuAlgorithm&centerLngLat=136.9365119934082,35.158405798185974&focus_zoom_level=16&context_zoom_level=15&glue_inner_radius=125&glue_outer_radius=200&roadType=car>
 	- 小関さんの道なり道路選別手法を使ったglue
 
-* <http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticStroke_v2&centerLngLat=136.9309671669116,35.15478942665804&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300>
+* <http://rain2.elcom.nitech.ac.jp:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticStroke_v2&centerLngLat=136.9309671669116,35.15478942665804&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300>
 	- glueをstrokeにしてみた
 	- ![p1](p1.png)
-* <http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticRoad&centerLngLat=136.9309,35.1547&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300&roadType=car>
+* <http://rain2.elcom.nitech.ac.jp:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticRoad&centerLngLat=136.9309,35.1547&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300&roadType=car>
 	- focus,glue,contexっぽい地図を作製した
 	- ![p1](p2.png)
-* <http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawSimplifiedStroke&centerLngLat=136.9309671669116,35.15478942665804&scale=15&threshold=50>
+* <http://rain2.elcom.nitech.ac.jp:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawSimplifiedStroke&centerLngLat=136.9309671669116,35.15478942665804&scale=15&threshold=50>
 	- l2errorNormを使ってline simplification(現在は上位50本のストロークをsimplifyして描画)
 	- ![p1](p3.png)
-* <http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawSimpleRoad>
+* <http://rain2.elcom.nitech.ac.jp:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawSimpleRoad>
 	- DBから道路データを取得し，描画後，画像データとしてクライアントに返す
 
-* <http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=Test>
+* <http://rain2.elcom.nitech.ac.jp:8080/EmmaGlueMuraseOriginal/MainServlet?type=Test>
 	- サーブレットで描画した図形を画像データとしてクライアントに返す
 
 
@@ -45,7 +45,7 @@ DrawElasticRoad：道路に色を付けた
 ## v2_1_0
 URLのパラメータの設定可能
 
-<http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticRoad&centerLngLat=136.9309,35.1547&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300&roadType=car>
+<http://rain2.elcom.nitech.ac.jp:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticRoad&centerLngLat=136.9309,35.1547&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300&roadType=car>
 
 
 ## v2_0_3
