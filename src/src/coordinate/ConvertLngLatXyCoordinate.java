@@ -11,7 +11,23 @@ import src.db.getData.OsmRoadDataGeom;
 
 
 /**
- * 緯度経度とアプレット座標の変換に関するクラス
+ * 緯度経度とxy座標の変換に関するクラス.<br>
+ * xy座標とは画面上に地図を表示したときの座標で，x座標は左から右方向に，y座標は上から下方向に伸びる.<br>
+ * 
+ * <br>
+ * サンプルコード<br>
+ * <div style="border-style: solid ; border-width: 1px; border-radius: 10px; box-shadow: 5px 5px 5px #AAA;">
+ * <pre>{@code
+ * GetLngLatOsm getLngLatOsm = new GetLngLatOsm(centerLngLat, focusScale, windowSize);
+ * ConvertLngLatXyCoordinate convert = new ConvertLngLatXyCoordinate((Point2D.Double)getLngLatOsm._upperLeftLngLat,
+ * (Point2D.Double)getLngLatOsm._lowerRightLngLat, windowSize);
+ * 緯度経度からxy座標に変換
+ * Point outputXy = convert.convertLngLatToXyCoordinate(lnglat)
+ * xy座標から緯度経度に変換
+ * Point outputLngLat = convert.convertXyCoordinateToLngLat(xy)
+ * }</pre>
+ * </div>
+ * 
  * @author murase
  *
  */
@@ -33,7 +49,7 @@ public class ConvertLngLatXyCoordinate {
 //	public Point2D meterPerLngLat;
 	
 	/**
-	 * 
+	 * コンストラクタ
 	 * @param aUpperLeftLngLat	// 左上の緯度経度.
 	 * @param aLowerRightLngLat	// 右下の緯度経度.
 	 * @param aWindowSize		// ウインドウサイズ(x,y 縦横の長さ).
@@ -61,25 +77,25 @@ public class ConvertLngLatXyCoordinate {
 	}
 	
 	/**
-	 * 緯度経度からアプレット内座標に変換.
+	 * 緯度経度からxy内座標に変換.
 	 * @param aLngLat 緯度経度
-	 * @return　アプレット座標
+	 * @return　xy座標
 	 */
 	public Point convertLngLatToXyCoordinate(Point2D aLngLat){
 		double width = _lowerRightLngLat.getX() - _upperLeftLngLat.getX();	// 右端から左端までの経度の差（経度であらわされている）.
 		double hight = _upperLeftLngLat.getY() - _lowerRightLngLat.getY() ;	// 上端から下端までの緯度の差（緯度であらわされている）.
-		double widthBase = _windowSize.x/width;				// widthBaseの逆数がアプレット1ドットあたりの経度の増加幅.
-		double heightBase = _windowSize.y/hight;			// heightBaseの逆数がアプレット1ドットあたりの緯度の増加幅.
+		double widthBase = _windowSize.x/width;				// widthBaseの逆数がxy1ドットあたりの経度の増加幅.
+		double heightBase = _windowSize.y/hight;			// heightBaseの逆数がxy1ドットあたりの緯度の増加幅.
 		
-		int xtoi = (int)((aLngLat.getX() - _upperLeftLngLat.getX())*widthBase);	// アプレット内のｘ座標.
-		int ytoi = (int)((aLngLat.getY() - _lowerRightLngLat.getY())*heightBase);	// アプレット内のy座標.
+		int xtoi = (int)((aLngLat.getX() - _upperLeftLngLat.getX())*widthBase);	// xy内のｘ座標.
+		int ytoi = (int)((aLngLat.getY() - _lowerRightLngLat.getY())*heightBase);	// xy内のy座標.
 		return(new Point(xtoi, _windowSize.y - ytoi));	// 戻り値のY軸は反転させる必要がある.
 	}
 	
 	/**
-	 * 緯度経度からアプレット内座標に変換.
+	 * 複数の緯度経度から複数のxy座標に変換.
 	 * @param aLngLatArray 緯度経度
-	 * @return　アプレット座標
+	 * @return　xy座標
 	 */
 	public ArrayList<Point> convertLngLatToXyCoordinate(ArrayList<Point2D> aLngLatArray){
 		Point lnglat;
@@ -92,8 +108,8 @@ public class ConvertLngLatXyCoordinate {
 	}
 	
 	/**
-	 * アプレット内座標から緯度経度に変換
-	 * @param aXyCoordinate　アプレット内座標
+	 * xy内座標から緯度経度に変換
+	 * @param aXyCoordinate　xy内座標
 	 * @return 緯度経度
 	 */
 	public Point2D.Double convertXyCoordinateToLngLat(Point aXyCoordinate){
@@ -102,16 +118,16 @@ public class ConvertLngLatXyCoordinate {
 		int XyCoordinateY = _windowSize.y - aXyCoordinate.y;	// Y軸の反転.
 		double width = _lowerRightLngLat.getX() - _upperLeftLngLat.getX();	// 右端から左端までの経度の差（経度であらわされている）.
 		double hight = _upperLeftLngLat.getY() - _lowerRightLngLat.getY() ;	// 上端から下端までの緯度の差（緯度であらわされている）.
-		double widthBase = _windowSize.x/width;			// widthBaseの逆数がアプレット1ドットあたりの経度の増加幅.
-		double heightBase = _windowSize.y/hight;		// heightBaseの逆数がアプレット1ドットあたりの緯度の増加幅.
+		double widthBase = _windowSize.x/width;			// widthBaseの逆数がxy1ドットあたりの経度の増加幅.
+		double heightBase = _windowSize.y/hight;		// heightBaseの逆数がxy1ドットあたりの緯度の増加幅.
 		
 		return(new Point2D.Double((XyCoordinateX/widthBase)+_upperLeftLngLat.getX(),
 				(XyCoordinateY/heightBase)+_lowerRightLngLat.getY()));
 	}
 	
 	/**
-	 * アプレット内座標から緯度経度に変換.
-	 * @param aXyCoordinateArray　アプレット座標
+	 * 複数のxy座標から複数の緯度経度に変換.
+	 * @param aXyCoordinateArray　xy座標
 	 * @return 緯度経度
 	 */
 	public ArrayList<Point2D> convertXyCoordinateToLngLat(ArrayList<Point> aXyCoordinateArray){
@@ -125,9 +141,9 @@ public class ConvertLngLatXyCoordinate {
 	}
 	
 	/**
-	 * 緯度経度からアプレット内座標に変換.
-	 * @param aLine2Double
-	 * @return
+	 * 緯度経度からxy内座標に変換(line2d版).
+	 * @param aLine2Double 線データ(緯度経度)
+	 * @return 線データ(xy座標)
 	 */
 	public Line2D convertLngLatToXyCoordinateLine2D(Line2D aLine2Double){
 		Line2D line2d = new Line2D.Double(convertLngLatToXyCoordinate((Point2D)aLine2Double.getP1()),

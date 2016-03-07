@@ -6,7 +6,20 @@ import java.awt.geom.Point2D;
 import src.ElasticPoint;
 
 /**
- * glueのxy座標に変換
+ * glue領域にある位置データを歪めてxy座標に変換.<br>
+ * <br>
+ * サンプルコード<br>
+ * <div style="border-style: solid ; border-width: 1px; border-radius: 10px; box-shadow: 5px 5px 5px #AAA;">
+ * <pre>{@code
+ * ConvertElasticPointGlue convertGlue = new ConvertElasticPointGlue(glueInnerRadius, glueOuterRadius, glueInnerRadiusMeter, glueOuterRadiusMeter,
+ * 		focusScale, contextScale, centerLngLat, _convertFocus, _convertContext, _contextMercatorConvert);
+ * Glue領域の座標を歪める
+ * convertGlue.convertLngLatGlueXy(point)
+ * }</pre>
+ * </div>
+ * <br>
+ * 詳しくは{@link servlet.ConvertElasticPoints#convertTransformedPoints(java.util.ArrayList)}のソースコードを参照.
+ * 
  * @author murase
  *
  */
@@ -20,7 +33,19 @@ public class ConvertElasticPointGlue {
 	public ConvertLngLatXyCoordinate _convertContext;
 	public ConvertMercatorXyCoordinate _contextMercatorConvert;
 	
-	
+	/**
+	 * コンストラクタ,初期設定
+	 * @param glueInnerRadius glue内側(focus-glue境界)の半径(ピクセル数)
+	 * @param glueOuterRadius glue外側(glue-context境界)の半径(ピクセル数)
+	 * @param glueInnerRadiusMeter glue内側の半径(メートル)
+	 * @param glueOuterRadiusMeter glue外側の半径(メートル)
+	 * @param focusScale focusのスケール(ズームレベル)
+	 * @param contextScale contextのスケール(ズームレベル)
+	 * @param centerLngLat 中心の緯度経度
+	 * @param convertFocus Focusにおける{@link src.coordinate.ConvertLngLatXyCoordinate}のインスタンス
+	 * @param convertContext Contextにおける{@link src.coordinate.ConvertLngLatXyCoordinate}のインスタンス
+	 * @param convertMercator {@link src.coordinate.ConvertMercatorXyCoordinate}のインスタンス
+	 */
 	public ConvertElasticPointGlue(int glueInnerRadius, Integer glueOuterRadius, double glueInnerRadiusMeter, double glueOuterRadiusMeter, int focusScale, int contextScale, Point2D centerLngLat,
 			ConvertLngLatXyCoordinate convertFocus, ConvertLngLatXyCoordinate convertContext, ConvertMercatorXyCoordinate convertMercator){
 		_glueInnerRadiusMeter = glueInnerRadiusMeter;

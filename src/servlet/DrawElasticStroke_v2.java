@@ -26,7 +26,7 @@ import src.db.getData.OsmRoadDataGeom;
 import src.db.getData.OsmStrokeDataGeom;
 
 /**
- * 色を付け他ストロークを使う
+ * 色を付け他ストロークを使う.
  * @author murase
  *
  */

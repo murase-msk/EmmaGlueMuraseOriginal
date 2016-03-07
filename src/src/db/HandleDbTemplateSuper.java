@@ -14,8 +14,10 @@ import java.util.Properties;
  *
  */
 public class HandleDbTemplateSuper {
-	private static final String MySQLJDBCDriver = "org.gjt.mm.mysql.Driver";
+//	private static final String MySQLJDBCDriver = "org.gjt.mm.mysql.Driver";
+	/** postgresql のJDBCDriver */
 	public static final String POSTGRESJDBCDRIVER_STRING = "org.postgresql.Driver";
+	/** 旧日本測地系 */
 	public static final int TOKYO97_EPGS_CODE = 4301;
 	/** WGS84 経度緯度(世界測地系とほぼ同じ) */
 	public static final int WGS84_EPSG_CODE = 4326;
@@ -23,30 +25,41 @@ public class HandleDbTemplateSuper {
 	public static final int WGS84_UTM_EPGS_CODE=3099;
 	// 下記の変数を正しく設定する
 	// DBNAME, DBDIR, USER, PASS, JDBCDriver, DBURL
-
-	// MySQL 用デフォルト
-	// Eclipse で MySQL を使いたいときは，次の手順で，WebContent\WEB-INF\lib にインポートしておく．
-	// http://dev.mysql.com/downloads/connector/ から，Connector/J をダウンロード
-	// c:\Program Files\Java\mysql-connector-java-5.1.7\ に置く．
-	//     WebContent\WEB-INF\lib を右クリック．「一般」→「ファイルシステム」
-	//     その後インポートすべきファイルとして，次のファイルを指定
-	//       c:\Program Files\Java\mysql-connector-java-5.1.7\mysql-connector-java-5.1.7-bin.jar を追加
-	//jdbc:mysql://amon2.elcom.nitech.ac.jp:3306/blue_db@root@usadasql
+	
+	/** DB名 */
 	private String DBNAME;// = "blue_db"; // Database Name
+	/** ユーザ名 */
 	private String USER;// = "root"; // user name for DB.
+	/** パスワード */
 	private String PASS;// = "usadasql"; // password for DB.hoge$#34hoge5
+	/** JDBCDriver */
 	private String JDBCDriver = POSTGRESJDBCDRIVER_STRING;
+	/** URL */
 	private String DBURL;// = "jdbc:mysql://amon2.elcom.nitech.ac.jp:3306/" + DBNAME;
+	/**  */
 	public Statement stmt = null;
 	
-	// コンストラクタ　データベースの設定.
+	/**
+	 * コンストラクタ　データベースの設定.
+	 * @param aDbName
+	 * @param aUser
+	 * @param aPass
+	 * @param aDbUrl
+	 */
 	public HandleDbTemplateSuper(String aDbName, String aUser, String aPass, String aDbUrl) {
 		DBNAME = aDbName;
 		USER = aUser;
 		PASS = aPass;
 		DBURL = aDbUrl;
 	}
-	// コンストラクタ　データベースの設定.
+	/**
+	 * コンストラクタ　データベースの設定.
+	 * @param aDbName
+	 * @param aUser
+	 * @param aPass
+	 * @param aDbUrl
+	 * @param JDBCDriver
+	 */
 	public HandleDbTemplateSuper(String aDbName, String aUser, String aPass, String aDbUrl, String JDBCDriver) {
 		DBNAME = aDbName;
 		USER = aUser;
@@ -84,9 +97,11 @@ public class HandleDbTemplateSuper {
 	 *  ここから先は，決まり文句を関数化したもの．
 	 */
  	public Connection conn = null;
-	//
-	// database open
-	//
+ 	/**
+ 	 * database open
+ 	 * @throws SQLException
+ 	 * @throws ClassNotFoundException
+ 	 */
 	public void connect() 
 	throws SQLException, ClassNotFoundException {
 		try {
@@ -129,9 +144,11 @@ public class HandleDbTemplateSuper {
 			}
 		}
 	}
-	//
-	// database close
-	//
+
+	/**
+	 * database close
+	 * @throws SQLException
+	 */
 	public void disconnect()
 	    throws SQLException {
 		try {
@@ -151,9 +168,13 @@ public class HandleDbTemplateSuper {
 			}
 		}
 	}
-	//
-	// execute select文用
-	//
+	
+	/***
+	 * execute select文用
+	 * @param sql
+	 * @return
+	 * @throws SQLException
+	 */
 	public ResultSet execute(String sql)
 	    throws SQLException {
 		try {	
@@ -180,9 +201,13 @@ public class HandleDbTemplateSuper {
 		}
 	}
 	
-	// 
-	// insert into 用  (データベースへデータの挿入)
-	// 
+	 
+	/**
+	 * insert into 用  (データベースへデータの挿入)
+	 * @param sql
+	 * @return
+	 * @throws SQLException
+	 */
 	public int insertInto(String sql)
 		    throws SQLException {
 			try {	

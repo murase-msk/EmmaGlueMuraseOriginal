@@ -111,6 +111,9 @@ public class StrokeSelectionAlgorithm_DrawGlue_v2 {
 		innerOuterStrokeId.addAll(hashSet);
 		// 選択したストロークの端点がglueの中でそこで切れていたら，接するストロークを選択.
 		ArrayList<Integer> newAddStrokeId = new ArrayList<>();	// 新規に追加するストロークID.
+		System.out.println(innerOuterStrokeId);
+		System.out.println(osmStrokeDataGeom._strokeIdToIndexHash);
+		System.out.println(glueInnerRadiusMeter);
 		for(int i=0; i<innerOuterStrokeId.size(); i++){
 			if(	// 選択したストロークの始点側の端点がglueの中にある.
 				LngLatMercatorUtility.calcDistanceFromLngLat(

@@ -11,6 +11,11 @@ import src.db.GeometryParsePostgres;
 import src.db.HandleDbTemplateSuper;
 import src.DbConfig;
 
+/**
+ * ODMのデータの面データを扱う
+ * @author murase
+ *
+ */
 public class OsmPolygonDataGeom extends HandleDbTemplateSuper{
 //	protected static final String DBNAME = "osm_all_db";	// Database Name
 //	protected static final String SCHEMA = "public";

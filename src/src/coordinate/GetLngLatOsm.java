@@ -5,7 +5,14 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
 
 /**
- * 中心緯度経度，ズームレベル，画像サイズから端点の緯度経度を求める
+ * 中心緯度経度，ズームレベル，画像サイズから端点の緯度経度を求める.<br>
+ * 
+ * 使い方<br>
+ * <pre>{@code
+ * GetLngLatOsm getLngLatOsm = new GetLngLatOsm(centerLngLat, focusScale, windowSize);
+ * }</pre>
+ * によって左上(getLngLatOsm._upperLeftLngLat)と右下(getLngLatOsm_upperLeftLngLat)の緯度経度が取得できる
+ * 
  * @author murase
  *
  */
@@ -13,12 +20,18 @@ public class GetLngLatOsm {
 	
 	/** 左上の緯度経度 */
 	public Point2D _upperLeftLngLat;
-	/** 右上の緯度経度 */
+	/** 右下の緯度経度 */
 	public Point2D _lowerRightLngLat;
 	
 	/** 1枚のタイル画像の大きさ(256ピクセルx256ピクセル) */
 	private static int oneTileImageSize=256;
 	
+	/**
+	 * コンストラクタ
+	 * @param aCenterLngLat 中心の緯度経度
+	 * @param aZoom ズームレベル
+	 * @param ImageSize 地図のサイズ(例 new Point(600,600): 600px*600pxの地図サイズ)
+	 */
 	public GetLngLatOsm(Point2D aCenterLngLat, int aZoom, Point ImageSize){
 		
 		Point tileXy;	// タイル座標.

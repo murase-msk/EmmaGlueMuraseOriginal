@@ -12,16 +12,19 @@ import servlet.sample.DrawSimplifiedStroke;
 import servlet.sample.Test;
 import servlet.sample.HelloWorld;
 
-
-
 /**
- * メインのサーブレット
- * Servlet implementation class MainServlet
+ * メインのサーブレット<br>
+ * すべてのGET,POSTリクエストはここで処理する<br>
+ * typeパラメータによって各クラスに処理を振り分ける<br>
+ * 
+ * @author murase
+ *
  */
 @WebServlet(name="MainServlet",urlPatterns={"/MainServlet"})// このアノテーションでweb.xml不要になる.
 public class MainServlet extends HttpServlet{
 
     /**
+     * コンストラクタ　特になし
      * @see HttpServlet#HttpServlet()
      */
     public MainServlet() {
@@ -29,9 +32,11 @@ public class MainServlet extends HttpServlet{
     }
 
     /**
+     * getリクエスト <br>
+     * http://localhost/projectName/MainServlet?type=...&.....の形式を受け取る<br>
+     * typeパラメータによって処理を振り分ける
 	 * @see HttpServlet#HttpServlet()
-	 * getリクエスト  http://localhost/projectName/MainServlet?
-	 * type=...&.....
+	 * 
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String url = ((HttpServletRequest)request).getRequestURL().toString();
@@ -51,29 +56,31 @@ public class MainServlet extends HttpServlet{
 		
 		type = request.getParameter("type");
 		switch(type){
+		case "ConvertElasticPoints":
+			new ConvertElasticPoints(request, response);
+			break;
+		case "DrawElasticRoad":
+			new DrawElasticRoad(request, response);
+			break;
+		case "DrawElasticStroke_v2":
+			new DrawElasticStroke_v2(request, response);
+			break;
+		case "DrawElasticStrokeConnectivity":
+			new DrawElasticStrokeConnectivity_v2(request, response);
+			break;
 		case "DrawGlue_v2":
 			new DrawGlue_v2(request, response);
 			break;
 		case "DrawMitinariSenbetuAlgorithm":
 			new DrawMitinariSenbetuAlgorithm(request, response);
 			break;
-		case "DrawElasticStrokeConnectivity":
-			new DrawElasticStrokeConnectivity_v2(request, response);
-			break;
-		case "DrawElasticStroke_v2":
-			new DrawElasticStroke_v2(request, response);
-			break;
-		case "DrawElasticRoad":
-			new DrawElasticRoad(request, response);
-			break;
+		///////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////
 		case "DrawSimplifiedStroke":
 			new DrawSimplifiedStroke(request, response);
 			break;
 		case "DrawSimpleRoad":
 			new DrawSimpleRoad(request, response);
-			break;
-		case "ConvertElasticPoints":
-			new ConvertElasticPoints(request, response);
 			break;
 		case "Test":
 			new Test(request, response);
@@ -94,14 +101,18 @@ public class MainServlet extends HttpServlet{
 	}
 
 	/**
+	 * POSTリクエストはGETリクエストと同じ<br>
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 * postリクエスト
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		doGet(request, response);
 	}
 
-	
+	/**
+	 * クライアントのIPアドレスを取得する
+	 * @param HttpServletRequestのインスタンス
+	 * @return クライアントのIPアドレス
+	 */
 	public static String getClientIpAddr(HttpServletRequest request) {  
         String ip = request.getHeader("X-Forwarded-For");  
         if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {  

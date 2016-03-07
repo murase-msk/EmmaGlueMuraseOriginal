@@ -5,7 +5,11 @@ import java.io.PrintWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-
+/**
+ * エラーメッセージに関するクラス
+ * @author murase
+ *
+ */
 public class ErrorMsg {
 
 	public ErrorMsg() {

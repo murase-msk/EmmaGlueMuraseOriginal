@@ -3,7 +3,8 @@ package src;
 import java.awt.geom.Point2D;
 
 /**
- * glue領域の点を変形させる処理に関するクラス
+ * glue領域の点を変形させる処理に関する内部処理クラス.
+ * src.coordinate.ConvertElasticPointGlueから呼び出される.
  * @author murase
  *
  */
@@ -14,19 +15,19 @@ public class ElasticPoint {
 	/** context-glue間の滑らかさ(0～1) */
 	private static double CONTEXT_SIDE_SMOOTH_RATIO = 0.2;
 	
-	// 中心からglue内側までの長さ(球面メルカトル座標系).
+	/** 中心からglue内側までの長さ(球面メルカトル座標系).*/
 	private double _glueInnerLengthMercator;
-	// 中心からglue外側までの長さ(球面メルカトル座標系).
+	/** 中心からglue外側までの長さ(球面メルカトル座標系).*/
 	private double _glueOuterLengthMercator;
-	// 拡大率.
+	/** 拡大率.*/
 	private double _magnifyingPower;
-	// 中心点の座標(球面メルカトル座標系).
+	/** 中心点の座標(球面メルカトル座標系).*/
 	private Point2D _centerPointMercator;
 	
 	
-	// 開始点，終了点，制御点12(中心点を原点とした球面メルカトル座標系).
+	/** 開始点，終了点，制御点12(中心点を原点とした球面メルカトル座標系).*/
 	private Point2D _startPoint, _endPoint, _controlPoint1, _controlPoint2;
-	// 中心から対象の点までの長さ(球面メルカトル座標系).
+	/** 中心から対象の点までの長さ(球面メルカトル座標系).*/
 	private double _pointLengthMercator;
 	
 	// 対称点の座標(球面メルカトル座標系).

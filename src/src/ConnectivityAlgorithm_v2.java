@@ -6,10 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import org.eclipse.jdt.internal.compiler.ast.TrueLiteral;
-
 import  src.db.getData.OsmStrokeDataGeom;
-import sun.launcher.resources.launcher;
 import  servlet.DrawElasticStrokeConnectivity_v2;
 import src.coordinate.LngLatMercatorUtility;
 

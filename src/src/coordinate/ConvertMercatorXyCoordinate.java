@@ -8,7 +8,22 @@ import java.util.ArrayList;
 import src.db.getData.OsmRoadDataGeom;
 
 /**
- * メルカトル座標系と画面上のxy座標変換に関するクラス
+ * メルカトル座標系と画面上のxy座標変換に関するクラス.
+ * 
+ * <br>
+ * サンプルコード<br>
+ * <div style="border-style: solid ; border-width: 1px; border-radius: 10px; box-shadow: 5px 5px 5px #AAA;">
+ * <pre>{@code
+ * ConvertMercatorXyCoordinate convert = new ConvertMercatorXyCoordinate(
+ * LngLatMercatorUtility.ConvertLngLatToMercator((Point2D.Double)_getLngLatOsmContext._upperLeftLngLat), 
+ * LngLatMercatorUtility.ConvertLngLatToMercator((Point2D.Double)_getLngLatOsmContext._lowerRightLngLat), windowSize);
+ * メルカトル座標からxy座標に変換
+ * Point outputXy = convert.convertMercatorToXyCoordinate(mercator);
+ * xy座標からメルカトル座標に変換
+ * Point outputMercator = convert.convertXyCoordinateToMercator(xy);
+ * }</pre>
+ * </div>
+ * 
  * @author murase
  *
  */
@@ -26,6 +41,12 @@ public class ConvertMercatorXyCoordinate {
 	/** 1ピクセルあたりの球面メルカトル座標の増加幅 */
 	public Point2D mercatorPerPixel;
 	
+	/**
+	 * コンストラクタ，初期設定をする
+	 * @param aUpperLeftMercator 左上のメルカトル座標
+	 * @param aLowerRightMercator 右下のメルカトル座標
+	 * @param aWindowSize 画面の大きさ(縦横　ピクセル数)
+	 */
 	public ConvertMercatorXyCoordinate(Point2D aUpperLeftMercator, Point2D aLowerRightMercator,
 			Point aWindowSize) {
 		_upperLeftMercator = aUpperLeftMercator;
@@ -39,25 +60,25 @@ public class ConvertMercatorXyCoordinate {
 	}
 	
 	/**
-	 * メルカトル座標からアプレット内座標に変換.
+	 * メルカトル座標からxy内座標に変換.
 	 * @param aMercator メルカトル座標
-	 * @return　アプレット座標
+	 * @return　xy座標
 	 */
 	public Point convertMercatorToXyCoordinate(Point2D aMercator){
 		double width = _lowerRightMercator.getX() - _upperLeftMercator.getX();	// 右端から左端までの経度の差（経度であらわされている）.
 		double hight = _upperLeftMercator.getY() - _lowerRightMercator.getY() ;	// 上端から下端までの緯度の差（緯度であらわされている）.
-		double widthBase = _windowSize.x/width;				// widthBaseの逆数がアプレット1ドットあたりの経度の増加幅.
-		double heightBase = _windowSize.y/hight;			// heightBaseの逆数がアプレット1ドットあたりの緯度の増加幅.
+		double widthBase = _windowSize.x/width;				// widthBaseの逆数がxy1ドットあたりの経度の増加幅.
+		double heightBase = _windowSize.y/hight;			// heightBaseの逆数がxy1ドットあたりの緯度の増加幅.
 		
-		int xtoi = (int)((aMercator.getX() - _upperLeftMercator.getX())*widthBase);	// アプレット内のｘ座標.
-		int ytoi = (int)((aMercator.getY() - _lowerRightMercator.getY())*heightBase);	// アプレット内のy座標.
+		int xtoi = (int)((aMercator.getX() - _upperLeftMercator.getX())*widthBase);	// xy内のｘ座標.
+		int ytoi = (int)((aMercator.getY() - _lowerRightMercator.getY())*heightBase);	// xy内のy座標.
 		return(new Point(xtoi, _windowSize.y - ytoi));	// 戻り値のY軸は反転させる必要がある.
 	}
 	
 	/**
-	 * メルカトル座標からアプレット内座標に変換.
+	 * メルカトル座標からxy内座標に変換.
 	 * @param aMercatorArray メルカトル座標
-	 * @return　アプレット座標
+	 * @return　xy座標
 	 */
 	public ArrayList<Point> convertMercatorToXyCoordinate(ArrayList<Point2D> aMercatorArray){
 		Point lnglat;
@@ -70,8 +91,8 @@ public class ConvertMercatorXyCoordinate {
 	}
 	
 	/**
-	 * アプレット内座標からメルカトル座標に変換
-	 * @param aXyCoordinate　アプレット内座標
+	 * xy内座標からメルカトル座標に変換
+	 * @param aXyCoordinate　xy内座標
 	 * @return メルカトル座標
 	 */
 	public Point2D.Double convertXyCoordinateToMercator(Point aXyCoordinate){
@@ -80,16 +101,16 @@ public class ConvertMercatorXyCoordinate {
 		int XyCoordinateY = _windowSize.y - aXyCoordinate.y;	// Y軸の反転.
 		double width = _lowerRightMercator.getX() - _upperLeftMercator.getX();	// 右端から左端までの経度の差（経度であらわされている）.
 		double hight = _upperLeftMercator.getY() - _lowerRightMercator.getY() ;	// 上端から下端までの緯度の差（緯度であらわされている）.
-		double widthBase = _windowSize.x/width;			// widthBaseの逆数がアプレット1ドットあたりの経度の増加幅.
-		double heightBase = _windowSize.y/hight;		// heightBaseの逆数がアプレット1ドットあたりの緯度の増加幅.
+		double widthBase = _windowSize.x/width;			// widthBaseの逆数がxy1ドットあたりの経度の増加幅.
+		double heightBase = _windowSize.y/hight;		// heightBaseの逆数がxy1ドットあたりの緯度の増加幅.
 		
 		return(new Point2D.Double((XyCoordinateX/widthBase)+_upperLeftMercator.getX(),
 				(XyCoordinateY/heightBase)+_lowerRightMercator.getY()));
 	}
 	
 	/**
-	 * アプレット内座標からメルカトル座標に変換.
-	 * @param aXyCoordinateArray　アプレット座標
+	 * xy内座標からメルカトル座標に変換.
+	 * @param aXyCoordinateArray　xy座標
 	 * @return メルカトル座標
 	 */
 	public ArrayList<Point2D> convertXyCoordinateToMercator(ArrayList<Point> aXyCoordinateArray){
@@ -103,7 +124,7 @@ public class ConvertMercatorXyCoordinate {
 	}
 	
 	/**
-	 * メルカトル座標からアプレット内座標に変換.
+	 * メルカトル座標からxy内座標に変換.
 	 * @param aLine2Double
 	 * @return
 	 */

@@ -31,7 +31,7 @@ import src.paint.PaintGlueRoad;
 import src.coordinate.ConvertElasticPointGlue;
 
 /**
- * focus,contextから一定数の重要なストロークを取り出し，描画する
+ * focus,contextから一定数の重要なストロークを取り出し，描画する.<br>
  * @author murase
  *
  */

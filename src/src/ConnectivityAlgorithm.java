@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import  src.db.getData.OsmStrokeDataGeom;
-import sun.launcher.resources.launcher;
 import  servlet.DrawElasticStrokeConnectivity_v2;
 
 /**

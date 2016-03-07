@@ -31,8 +31,12 @@ import src.paint.PaintGluePolygon;
 import src.paint.PaintGlueRoad;
 
 /**
- * 伸縮する道路を描画
- * http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticRoad&centerLngLat=136.9309671669116,35.15478942665804&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300&roadType=car
+ * 伸縮する道路を描画.<br>
+ * <br>
+ * <pre>
+ * http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticRoad&centerLngLat=136.9309671669116,35.15478942665804&
+ * focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300&roadType=car
+ * </pre>
  * @author murase
  *
  */
@@ -57,9 +61,9 @@ public class DrawElasticRoad {
 	/** ポリゴンの描画有無 */
 	public boolean isDrawPolygon = false;
 	
-	// 中心点からglue内側の長さ.
+	/** 中心点からglue内側の長さ.*/
 	public double glueInnerRadiusMeter;
-	// 中心点からglue外側の長さ.
+	/** 中心点からglue外側の長さ.*/
 	public double glueOuterRadiusMeter;
 	
 	
@@ -89,6 +93,11 @@ public class DrawElasticRoad {
 	public ArrayList<ArrayList<Point2D>> _selectedTransformedPoint = new ArrayList<>();
 	
 	//http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticRoad&centerLngLat=136.9309671669116,35.15478942665804&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300
+	/**
+	 * コンストラクタ
+	 * @param request
+	 * @param response
+	 */
 	public DrawElasticRoad(HttpServletRequest request, HttpServletResponse response) {
 		// 必須パラメータがあるか.
 		if(request.getParameter("centerLngLat")==null ||

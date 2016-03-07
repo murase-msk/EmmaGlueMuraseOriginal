@@ -4,11 +4,9 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
-import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -17,11 +15,16 @@ import src.coordinate.ConvertMercatorXyCoordinate;
 import src.coordinate.GetLngLatOsm;
 import src.coordinate.ConvertElasticPointGlue;
 import src.coordinate.LngLatMercatorUtility;
-import sun.launcher.resources.launcher;
 
 /**
- * 点(複数)をglueに描画できる形に変換する
- * http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=ConvertElasticPoints&centerLngLat=136.9288336363183,35.158167325045824&points=136.92588320639172,35.15937778672364,136.9266127672479,35.15893921573326,136.9270526495242,35.15869361494546,136.92767492201676,35.15823749722958,136.92857614424028,35.15764103174276,136.92920914557283,35.15704456188256,136.92994943525997,35.15660597831222,136.93057170775256,35.15601827262135,136.93055025008164,35.156000729102885&focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300
+ * 点(複数)をglueに描画できる形に変換する.<br>
+ * <br>
+ * サンプルリクエスト<br>
+ * <pre>
+ * http://localhost:8080/EmmaGlueMuraseOriginal/MainServlet?type=ConvertElasticPoints&centerLngLat=136.9288336363183,35.158167325045824&
+ * points=136.92588320639172,35.15937778672364,136.9266127672479,35.15893921573326,136.9270526495242,35.15869361494546,136.92767492201676,35.15823749722958,136.92857614424028,35.15764103174276,136.92920914557283,35.15704456188256,136.92994943525997,35.15660597831222,136.93057170775256,35.15601827262135,136.93055025008164,35.156000729102885
+ * &focus_zoom_level=17&context_zoom_level=15&glue_inner_radius=200&glue_outer_radius=300
+ * </pre>
  * @author murase
  *
  */
@@ -57,7 +60,11 @@ public class ConvertElasticPoints {
 	/** メルカトル座標系xy変換 */
 	private ConvertMercatorXyCoordinate _contextMercatorConvert;
 	
-	
+	/**
+	 * コンストラクタ(URLを受け取った後の処理)
+	 * @param request HttpServletRequestのインスタンス
+	 * @param response HttpServletResponseのインスタンス
+	 */
 	public ConvertElasticPoints(HttpServletRequest request, HttpServletResponse response){
 		
 		// 必須パラメータがあるか.
@@ -118,6 +125,15 @@ public class ConvertElasticPoints {
 		}
 	}
 	
+	/**
+	 * コンストラクタ 必要なデータを設定する
+	 * @param aCenterLngLat 中心の緯度経度
+	 * @param aFocusScale focusのスケール
+	 * @param aContextScale contextのスケール
+	 * @param aGlueInnerRadius Glue内側の半径
+	 * @param aGlueOuterRadius Glue外側の半径
+	 * @param aWindowSize ウインドウのサイズ(600px*600pxなど)
+	 */
 	public ConvertElasticPoints(Point2D aCenterLngLat, int aFocusScale, int aContextScale, 
 			int aGlueInnerRadius, int aGlueOuterRadius, Point aWindowSize){
 		centerLngLat = aCenterLngLat;
@@ -130,7 +146,8 @@ public class ConvertElasticPoints {
 	
 	/**
 	 * glue用の座標に変換
-	 * @param points
+	 * @param points Glue領域に歪めるために変換する点の集合
+	 * @return 変形後の点集合
 	 */
 	public ArrayList<Point2D> convertTransformedPoints(ArrayList<Point2D> points){
 		//focus用の緯度経度xy変換

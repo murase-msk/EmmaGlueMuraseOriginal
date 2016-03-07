@@ -27,24 +27,28 @@ import src.db.getData.OsmRoadDataGeom;
 import src.db.getData.OsmStrokeDataGeom;
 
 /**
- * focusから伸びるストロークを選択し，描画する
- * connectivityを考える
- * アルゴリズム
- * ストロークを重要度の高い順にソートする
- * 重要度の高い順から"focus-contextにつながるストローク”であった
- * 	それを選択，
- * 	"保留キュー"内のストロークを順に見てfocus-contextにつながるストロークがないか確かめる
- * focus-contextにつながるストロークでなかった
- * 	ほりゅーキューにプッシュ
- * 必要な数だけストロークを描画したら終了
- * 
- * "focus-contextにつながるストローク”
- * 	選択したストロークが直接focus-contextをまたぐ
- * 	focus,contextのどちらかにかかるかつ，それ以前に描画したストロークと係る
+ * focusから伸びるストロークを選択し，描画する.<br>
+ * <br>
+ * connectivityを考える<br>
+ * アルゴリズム<br>
+ * ストロークを重要度の高い順にソートする<br>
+ * 重要度の高い順から"focus-contextにつながるストローク”であった<br>
+ * 	それを選択，<br>
+ * 	"保留キュー"内のストロークを順に見てfocus-contextにつながるストロークがないか確かめる<br>
+ * focus-contextにつながるストロークでなかった<br>
+ * 	ほりゅーキューにプッシュ<br>
+ * 必要な数だけストロークを描画したら終了<br>
+ * <br>
+ * "focus-contextにつながるストローク”<br>
+ * 	選択したストロークが直接focus-contextをまたぐ<br>
+ * 	focus,contextのどちらかにかかるかつ，それ以前に描画したストロークと係る<br>
  * 
  * @author murase
- *
- * http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticStrokeConnectivity&centerLngLat=136.9324779510498,35.160402404742165&focus_zoom_level=16&context_zoom_level=14&glue_inner_radius=125&glue_outer_radius=200&roadType=car?1444108280199
+ * <pre>
+ * http://133.68.13.112:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticStrokeConnectivity&
+ * centerLngLat=136.9324779510498,35.160402404742165&focus_zoom_level=16&context_zoom_level=14&glue_inner_radius=125&glue_outer_radius=200&
+ * roadType=car?1444108280199
+ * </pre>
  */
 public class DrawElasticStrokeConnectivity_v2 {
 	/** 地図の大きさ */

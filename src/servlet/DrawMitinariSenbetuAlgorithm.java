@@ -27,26 +27,25 @@ import src.drawMitinariSenbetuAlgorithm.*;
 import src.paint.*;;
 
 /**
- * 道なり道路選別手法を使ってglueの道路を総描
- * 
- * 道なりルール
- * Rule1
- * 1つのリンクと接続していたらそれが道なりのリンク
- * Rule2
- * 2つ以上のリンクと接続していたらなす角が指定した角度α以下が道なりのリンク
- * Rule3
- * 省略
- * Rule4
- * T字路(2つのリンクと接続し，2つのリンクのなす角がα以上)ならその2つのリンクは道なりのリンク
- * 
- * 選択ルール
- * focus-glueをまたぐリンク(focus側を始点，glue側を終点)から道なりルールを再帰的に適用
+ * 道なり道路選別手法を使ってglueの道路を総描.<br>
+ * <br>
+ * 道なりルール<br>
+ * Rule1<br>
+ * 1つのリンクと接続していたらそれが道なりのリンク<br>
+ * Rule2<br>
+ * 2つ以上のリンクと接続していたらなす角が指定した角度α以下が道なりのリンク<br>
+ * Rule3<br>
+ * 省略<br>
+ * Rule4<br>
+ * T字路(2つのリンクと接続し，2つのリンクのなす角がα以上)ならその2つのリンクは道なりのリンク<br>
+ * <br>
+ * 選択ルール<br>
+ * focus-glueをまたぐリンク(focus側を始点，glue側を終点)から道なりルールを再帰的に適用<br>
  * 
  * 
  * @author murase
  *
  */
-
 public class DrawMitinariSenbetuAlgorithm {
 	/** 地図の大きさ */
 	public Point windowSize = new Point(700, 700);
