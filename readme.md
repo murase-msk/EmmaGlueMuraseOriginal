@@ -88,8 +88,11 @@ xy: glue画像の左上を(0,0)としたxyの座標
 
 ### サンプルリクエスト
 [すべての道路を描画](http://rain2.elcom.nitech.ac.jp:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticRoad&centerLngLat=137.08877563476562,35.17229866784575&focus_zoom_level=16&context_zoom_level=15&glue_inner_radius=125&glue_outer_radius=200&roadType=all)
+
 [ポリゴンも描画](http://rain2.elcom.nitech.ac.jp:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticRoad&centerLngLat=137.08877563476562,35.17229866784575&focus_zoom_level=16&context_zoom_level=15&glue_inner_radius=125&glue_outer_radius=200&roadType=all&isDrawPolygon=true)
+
 [道路クラスが一定以上の道路のみを描画](http://rain2.elcom.nitech.ac.jp:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticRoad&centerLngLat=136.93586826324463,35.15847596957192&focus_zoom_level=16&context_zoom_level=15&glue_inner_radius=125&glue_outer_radius=200&roadType=car)
+
 [ベクター形式で返す](http://rain2.elcom.nitech.ac.jp:8080/EmmaGlueMuraseOriginal/MainServlet?type=DrawElasticRoad&centerLngLat=137.08877563476562,35.17229866784575&focus_zoom_level=16&context_zoom_level=15&glue_inner_radius=125&glue_outer_radius=200&option=vector)
 
 ## DrawElasticStroke_v2
