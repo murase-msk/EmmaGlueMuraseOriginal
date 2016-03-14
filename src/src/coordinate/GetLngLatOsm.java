@@ -64,7 +64,7 @@ public class GetLngLatOsm {
 	 * @param zoom
 	 * @return
 	 */
-	 private static Point getTileNumber(final double lat, final double lon, final int zoom) {
+	 static Point getTileNumber(final double lat, final double lon, final int zoom) {
 		int xtile = (int)Math.floor( (lon + 180) / 360 * (1<<zoom) ) ;
 		int ytile = (int)Math.floor( (1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI) / 2 * (1<<zoom) ) ;
 		if (xtile < 0)
@@ -79,7 +79,7 @@ public class GetLngLatOsm {
 	}
 	
 	 
-	 class BoundingBox {
+	 static class BoundingBox {
 		double north;
 		double south;
 		double east;
@@ -94,7 +94,7 @@ public class GetLngLatOsm {
 	 * @param zoom
 	 * @return
 	 */
-	private BoundingBox tile2boundingBox(final int x, final int y, int zoom) {
+	 static BoundingBox tile2boundingBox(final int x, final int y, int zoom) {
 	//	zoom = 16;
 //		System.out.println("x"+x+"  y"+y+"   z"+zoom);
 		BoundingBox bb = new BoundingBox();
